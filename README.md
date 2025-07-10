@@ -39,23 +39,32 @@ flowchart LR
   subgraph cluster["Kubernetes Cluster"]
   direction LR
   subgraph nodeA["Kubernetes Node A"]
-    collector-ebpf-profiler-a["Collector eBPF Profiler"]
+    collector-ebpf-profiler-a["OTel Collector eBPF Profiling Distro"]
   end
   subgraph nodeB["Kubernetes Node B"]
-    collector-ebpf-profiler-b["Collector eBPF Profiler"]
+    collector-ebpf-profiler-b["OTel Collector eBPF Profiling Distro"]
   end
   subgraph nodeC["Kubernetes Node C"]
-    collector-ebpf-profiler-c["Collector eBPF Profiler"]
+    collector-ebpf-profiler-c["OTel Collector eBPF Profiling Distro"]
+    collector-kubernetes["OTel Collector Kubernetes Distro"]
   end
   end
   pyroscope-development["Pyroscope"]
   pyroscope-backend["Pyroscope"]
-  otel-collector["OTel Collector"]
-  collector-ebpf-profiler-a --> pyroscope-development
-  collector-ebpf-profiler-a --> otel-collector
-  collector-ebpf-profiler-b --> otel-collector
-  collector-ebpf-profiler-c --> otel-collector
-  otel-collector --> pyroscope-backend
+  otel-collector["OTel Collector Contrib Distro"]
+  collector-ebpf-profiler-a e1@--> pyroscope-development
+  collector-ebpf-profiler-a e2@--> otel-collector
+  collector-ebpf-profiler-b e3@--> otel-collector
+  collector-ebpf-profiler-c e4@--> otel-collector
+  otel-collector e5@--> pyroscope-backend
+  collector-kubernetes e6@--> otel-collector
+
+  e1@{ animate: true }
+  e2@{ animate: true }
+  e3@{ animate: true }
+  e4@{ animate: true }
+  e5@{ animate: true }
+  e6@{ animate: true }
 ```
 
 ---
