@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="collector-ebpf-profiler" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="opentelemetry-collector-ebpf-profiler" />
+    <working_directory value="$PROJECT_DIR$/_build" />
+    <parameters value="--config=$PROJECT_DIR$/collector-config.yaml --feature-gates=service.profilesSupport" />
+    <sudo value="true" />
+    <kind value="PACKAGE" />
+    <package value="go.opentelemetry.io/collector/cmd/builder" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/_build/main.go" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -1,0 +1,20 @@
+receivers:
+  profiling:
+    BpfVerifierLogLevel: 1
+    Tracers: php
+    SamplesPerSecond: 19
+    VerboseMode: true
+    SendErrorFrames: false
+    OffCPUThreshold: 0
+
+exporters:
+  debug:
+    verbosity: normal
+
+service:
+  pipelines:
+    profiles:
+      receivers:
+        - profiling
+      exporters:
+        - debug
