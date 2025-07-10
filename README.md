@@ -82,6 +82,27 @@ flowchart LR
   e6@{ animate: true }
 ```
 
+``` mermaid
+flowchart TD
+  subgraph node-a["Node: A"]
+    subgraph pod["Pod: collector-ebpf-profiler"]
+      subgraph container["Container: profiler"]
+        procfs@{ shape: cyl, label: "/proc" }
+        cgroupfs@{ shape: cyl, label: "/sys/fs/cgroup" }
+        debugfs@{ shape: cyl, label: "/sys/kernel/debug" }
+      end
+    end
+    volumeMount1["/proc"]
+    volumeMount2["/sys/fs/cgroup"]
+    volumeMount3["/sys/kernel/debug"]
+
+    procfs --> volumeMount1
+    cgroupfs --> volumeMount2
+    debugfs --> volumeMount3
+
+  end
+```
+
 ---
 
 ## Building and Running Collector eBPF Profiling Distribution Locally
