@@ -84,57 +84,47 @@ flowchart LR
 
 ---
 
-## Building and Running eBPF Profiling Distribution Locally
+## Building and Running Collector eBPF Profiling Distribution Locally
 
-manifest.yaml - builder manifest
 
-Install the builder:
+1. Install the builder. For linux/amd64 platform you can use the following command:
 
-```
-curl --proto '=https' --tlsv1.2 -fL -o ocb \
-https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.129.0/ocb_0.129.0_linux_amd64
-chmod +x ocb
-```
+   ```
+   curl --proto '=https' --tlsv1.2 -fL -o ocb \
+   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.129.0/ocb_0.129.0_linux_amd64
+   chmod +x ocb
+   ```
 
-Generate the code and build your collector's distribution:
+2. Generate the code and build Collector's distribution:
 
-```
-./ocb --config manifest.yaml
-```
+   ```
+   ./ocb --config manifest.yaml
+   ```
 
-Containerize your Collector’s distribution:
-
-```
-# Enable Docker multi-arch builds
-docker run --rm --privileged tonistiigi/binfmt --install all
-docker buildx create --name mybuilder --use
-```
-
-```
-# Build the Docker image as Linux AMD and ARM,
-# and loads the build result to "docker images"
-docker buildx build --load \
-  -t docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
-  --platform=linux/amd64,linux/arm64 .
-```
-
-```
-# Test the newly-built image
-docker run --name collector-ebpf-profiler \
-  --privileged \
-  --pid=host \
-  -it \
-  --rm \
-  -v /sys/kernel/debug:/sys/kernel/debug \
-  -v /sys/fs/cgroup:/sys/fs/cgroup \
-  -v /proc:/proc \
-  -v $PWD/collector-config.yaml:/etc/config.yaml \
-  --publish=4317:4317 \
-  --publish=4318:4318 \
-  docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
-  --config=/etc/config.yaml \
-  --feature-gates=service.profilesSupport
-```
+3. Containerize Collector’s distribution:
+   1. Enable Docker multi-arch builds:
+      ```
+      docker run --rm --privileged tonistiigi/binfmt --install all
+      docker buildx create --name mybuilder --use
+      ```
+   2. Build the Docker image as Linux AMD and ARM, and load the build result to "docker images":
+      ```
+      docker buildx build --load \
+        -t docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+        --platform=linux/amd64,linux/arm64 .
+      ```
+   3. Test the newly-built image:
+      ```
+      docker run --name collector-ebpf-profiling-distro --privileged --pid=host -it --rm \
+        -v /sys/kernel/debug:/sys/kernel/debug \
+        -v /sys/fs/cgroup:/sys/fs/cgroup \
+        -v /proc:/proc \
+        -v $PWD/collector-config.yaml:/etc/config.yaml \
+        -p 4317:4317 -p 4318:4318 \
+        docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+          --config=/etc/config.yaml \
+          --feature-gates=service.profilesSupport
+      ```
 
 ## Resources
 
