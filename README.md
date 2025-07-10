@@ -4,35 +4,50 @@ This OpenTelemetry Collector distribution is made specifically to be used as a n
 profiles on all processes running on the system. It contains the [eBPF profiler receiver] as well as
 a subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
 
-``` yaml
-# collector-config.yaml
-receivers:
-  profiling:
-    Tracers: "php,python"
-    SamplesPerSecond: 20
-exporters:
-  debug:
-    verbosity: normal
-service:
-  pipelines:
-    profiles:
-      receivers:
-        - profiling
-      exporters:
-        - debug
-```
+## Quick Start
 
-```
-docker run --name collector-ebpf-profiler --privileged --pid=host -it --rm \
-  -v /sys/kernel/debug:/sys/kernel/debug \
-  -v /sys/fs/cgroup:/sys/fs/cgroup \
-  -v /proc:/proc \
-  -v $PWD/collector-config.yaml:/etc/config.yaml \
-  -p 4317:4317 -p 4318:4318 \
-  danielpacak/opentelemetry-collector-ebpf-profiler:latest \
-  --config=/etc/config.yaml \
-  --feature-gates=service.profilesSupport
-```
+1. Create a collector configuration file. A very basic configuration may look like this:
+
+    ``` yaml
+    # collector-config.yaml
+    receivers:
+      profiling:
+        Tracers: "php,python"
+        SamplesPerSecond: 20
+
+    # processors:
+    #   custom_profiles_processor:
+    #     foo: "bar"
+
+    exporters:
+      debug:
+        verbosity: normal
+
+    service:
+      pipelines:
+        profiles:
+          receivers:
+            - profiling
+    #       processors:
+    #         - custom_profiles_processor
+          exporters:
+            - debug
+    ```
+2. Create and run collector in a new container from the image:
+
+    ```
+    docker run --name collector-ebpf-profiling-distro --privileged --pid=host -it --rm \
+      -v /sys/kernel/debug:/sys/kernel/debug \
+      -v /sys/fs/cgroup:/sys/fs/cgroup \
+      -v /proc:/proc \
+      -v $PWD/collector-config.yaml:/etc/config.yaml \
+      -p 4317:4317 -p 4318:4318 \
+      docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+        --config=/etc/config.yaml \
+        --feature-gates=service.profilesSupport
+    ```
+
+## Example Kubernetes Deployment
 
 ``` mermaid
 flowchart LR
@@ -69,6 +84,8 @@ flowchart LR
 
 ---
 
+## Building and Running eBPF Profiling Distribution Locally
+
 manifest.yaml - builder manifest
 
 Install the builder:
@@ -97,7 +114,7 @@ docker buildx create --name mybuilder --use
 # Build the Docker image as Linux AMD and ARM,
 # and loads the build result to "docker images"
 docker buildx build --load \
-  -t danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+  -t docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
   --platform=linux/amd64,linux/arm64 .
 ```
 
@@ -114,7 +131,7 @@ docker run --name collector-ebpf-profiler \
   -v $PWD/collector-config.yaml:/etc/config.yaml \
   --publish=4317:4317 \
   --publish=4318:4318 \
-  danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+  docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
   --config=/etc/config.yaml \
   --feature-gates=service.profilesSupport
 ```
