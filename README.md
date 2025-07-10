@@ -22,16 +22,19 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
     exporters:
       debug:
         verbosity: normal
+    # custom_profiles_exporter:
+    #   bar: "baz"
 
     service:
       pipelines:
         profiles:
           receivers:
             - profiling
-    #       processors:
-    #         - custom_profiles_processor
+    #     processors:
+    #       - custom_profiles_processor
           exporters:
             - debug
+    #       - custom_profiles_exporter
     ```
 2. Create and run collector in a new container from the image:
 
@@ -100,9 +103,24 @@ flowchart TD
   end
 ```
 
+## Example Docker Compose Deployment
+
+```
+cd example/docker
+docker compose up -d
+```
+
+Pyroscope is accessible at http://localhost:4040 and Grafana at http://localhost:3000. Grafana is
+provisioned with the Pyroscope datasource so you can either see profiles in Pyroscope web UI of with
+Grafana's Pyroscope application.
+
+```
+docker compose down
+```
+
 ---
 
-## Building and Running Collector eBPF Profiling Distribution Locally
+## Building and Running Locally
 
 
 1. Install the builder. For linux/amd64 platform you can use the following command:

@@ -5,9 +5,9 @@ services:
       - "--config=/etc/collector-config.yaml"
       - "--feature-gates=service.profilesSupport"
     privileged: true
-    pid: "host"
+    pid: host
     volumes:
-      - ./config/collector.yaml:/etc/collector-config.yaml
+      - ./collector/config.yaml:/etc/collector-config.yaml
       - /sys/kernel/debug:/sys/kernel/debug
       - /sys/fs/cgroup:/sys/fs/cgroup
       - /proc:/proc
@@ -19,10 +19,7 @@ services:
     depends_on:
       - pyroscope
 
-
   pyroscope:
-    # fixed versions for pyroscope, otel-collector, otel-profiler due to protocol changes
-    #image: grafana/pyroscope:weekly-f96-1886f2c42
     image: grafana/pyroscope:latest
     command:
      - "-self-profiling.disable-push=true"
@@ -31,19 +28,70 @@ services:
     networks:
       - otel-net
 
-#  grafana:
-#    image: grafana/grafana:latest
-#    environment:
-#      - GF_INSTALL_PLUGINS=grafana-pyroscope-app
-#      - GF_AUTH_ANONYMOUS_ENABLED=true
-#      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-#      - GF_AUTH_DISABLE_LOGIN_FORM=true
-#    volumes:
-#      - ./grafana-provisioning:/etc/grafana/provisioning
-#    ports:
-#      - "3000:3000"
-#    networks:
-#      - otel-net
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-pyroscope-app
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    networks:
+      - otel-net
+    depends_on:
+      - pyroscope
+
+  pgadmin-postgres:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=test
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_PASSWORD=test
+    networks:
+      - otel-net
+
+  # https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html
+  pgadmin:
+    image: dpage/pgadmin4:9.5.0
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=pgadmin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    ports:
+      - "9000:80"
+    networks:
+      - otel-net
+    depends_on:
+      - pgadmin-postgres
+
+  phpmyadmin-mysql:
+    image: docker.io/library/mysql:8
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_DATABASE=test
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+    ports:
+      - "3306:3306"
+    networks:
+      - otel-net
+
+  phpmyadmin:
+    image: phpmyadmin:5.2-apache
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=phpmyadmin-mysql
+      - PMA_USER=test
+      - PMA_PASSWORD=test
+    ports:
+      - "8000:80"
+    networks:
+      - otel-net
+    depends_on:
+      - phpmyadmin-mysql
 
 networks:
   otel-net:
