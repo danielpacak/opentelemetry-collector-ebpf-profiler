@@ -1,8 +1,38 @@
 # OpenTelemetry Collector eBPF Profiling Distribution
 
 This OpenTelemetry Collector distribution is made specifically to be used as a node agent to gather
-profiles on all processes running on the system. It contains the eBPF profiler receiver as well as a
-subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
+profiles on all processes running on the system. It contains the [eBPF profiler receiver] as well as
+a subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
+
+``` yaml
+# collector-config.yaml
+receivers:
+  profiling:
+    Tracers: "php,python"
+    SamplesPerSecond: 20
+exporters:
+  debug:
+    verbosity: normal
+service:
+  pipelines:
+    profiles:
+      receivers:
+        - profiling
+      exporters:
+        - debug
+```
+
+```
+docker run --name collector-ebpf-profiler --privileged --pid=host -it --rm \
+  -v /sys/kernel/debug:/sys/kernel/debug \
+  -v /sys/fs/cgroup:/sys/fs/cgroup \
+  -v /proc:/proc \
+  -v $PWD/collector-config.yaml:/etc/config.yaml \
+  -p 4317:4317 -p 4318:4318 \
+  danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+  --config=/etc/config.yaml \
+  --feature-gates=service.profilesSupport
+```
 
 ``` mermaid
 flowchart LR
@@ -27,6 +57,8 @@ flowchart LR
   collector-ebpf-profiler-c --> otel-collector
   otel-collector --> pyroscope-backend
 ```
+
+---
 
 manifest.yaml - builder manifest
 
@@ -85,3 +117,5 @@ docker run --name collector-ebpf-profiler \
 3. https://opentelemetry.io/docs/collector/custom-collector/
 4. https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
 5. https://github.com/grafana/pyroscope/blob/main/examples/grafana-alloy-auto-instrumentation/ebpf-otel/docker/docker-compose.yml
+
+[eBPF profiler receiver]: https://github.com/open-telemetry/opentelemetry-ebpf-profiler
