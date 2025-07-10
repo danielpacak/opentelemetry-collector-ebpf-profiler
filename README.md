@@ -51,27 +51,24 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
 
 ``` mermaid
 flowchart LR
-  subgraph cluster["Kubernetes Cluster"]
-  direction LR
-  subgraph nodeA["Kubernetes Node A"]
-    collector-ebpf-profiler-a["OTel Collector eBPF Profiling Distro"]
+  subgraph nodeA["Node: A"]
+    collector-ebpf-profiler-a["Pod: OTel Collector eBPF Profiling Distro"]
   end
-  subgraph nodeB["Kubernetes Node B"]
-    collector-ebpf-profiler-b["OTel Collector eBPF Profiling Distro"]
+  subgraph nodeB["Node: B"]
+    collector-ebpf-profiler-b["Pod: OTel Collector eBPF Profiling Distro"]
   end
-  subgraph nodeC["Kubernetes Node C"]
-    collector-ebpf-profiler-c["OTel Collector eBPF Profiling Distro"]
-    collector-kubernetes["OTel Collector Kubernetes Distro"]
+  subgraph nodeC["Node: C"]
+    collector-ebpf-profiler-c["Pod: OTel Collector eBPF Profiling Distro"]
+    collector-kubernetes["Pod: OTel Collector Kubernetes Distro"]
   end
-  end
-  pyroscope-development["Pyroscope"]
-  pyroscope-backend["Pyroscope"]
+  pyroscope["Pyroscope"]
+  clickhouse@{ shape: cyl, label: "ClickHouse" }
   otel-collector["OTel Collector Contrib Distro"]
-  collector-ebpf-profiler-a e1@--> pyroscope-development
   collector-ebpf-profiler-a e2@--> otel-collector
   collector-ebpf-profiler-b e3@--> otel-collector
   collector-ebpf-profiler-c e4@--> otel-collector
-  otel-collector e5@--> pyroscope-backend
+  otel-collector e5@--> pyroscope
+  otel-collector e1@--> clickhouse
   collector-kubernetes e6@--> otel-collector
 
   e1@{ animate: true }
