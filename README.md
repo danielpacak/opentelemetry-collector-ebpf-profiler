@@ -1,5 +1,33 @@
 # OpenTelemetry Collector eBPF Profiling Distribution
 
+This OpenTelemetry Collector distribution is made specifically to be used as a node agent to gather
+profiles on all processes running on the system. It contains the eBPF profiler receiver as well as a
+subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
+
+``` mermaid
+flowchart LR
+  subgraph cluster["Kubernetes Cluster"]
+  direction LR
+  subgraph nodeA["Kubernetes Node A"]
+    collector-ebpf-profiler-a["Collector eBPF Profiler"]
+  end
+  subgraph nodeB["Kubernetes Node B"]
+    collector-ebpf-profiler-b["Collector eBPF Profiler"]
+  end
+  subgraph nodeC["Kubernetes Node C"]
+    collector-ebpf-profiler-c["Collector eBPF Profiler"]
+  end
+  end
+  pyroscope-development["Pyroscope"]
+  pyroscope-backend["Pyroscope"]
+  otel-collector["OTel Collector"]
+  collector-ebpf-profiler-a --> pyroscope-development
+  collector-ebpf-profiler-a --> otel-collector
+  collector-ebpf-profiler-b --> otel-collector
+  collector-ebpf-profiler-c --> otel-collector
+  otel-collector --> pyroscope-backend
+```
+
 manifest.yaml - builder manifest
 
 Install the builder:
