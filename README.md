@@ -189,10 +189,11 @@ docker compose down
 
 ## Resources
 
-1. https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler
-2. https://github.com/open-telemetry/opentelemetry-ebpf-profiler/issues/521
-3. https://opentelemetry.io/docs/collector/custom-collector/
-4. https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
-5. https://github.com/grafana/pyroscope/blob/main/examples/grafana-alloy-auto-instrumentation/ebpf-otel/docker/docker-compose.yml
+1. https://opentelemetry.io/docs/collector/distributions/
+2. https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler
+3. https://github.com/open-telemetry/opentelemetry-ebpf-profiler/issues/521
+4. https://opentelemetry.io/docs/collector/custom-collector/
+5. https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
+6. https://github.com/grafana/pyroscope/blob/main/examples/grafana-alloy-auto-instrumentation/ebpf-otel/docker/docker-compose.yml
 
 [eBPF profiler receiver]: https://github.com/open-telemetry/opentelemetry-ebpf-profiler
