@@ -5,6 +5,7 @@ FROM golang:1.23.6 AS build-stage
 WORKDIR /build
 
 COPY ./manifest.yaml manifest.yaml
+COPY ./exporter exporter
 
 RUN --mount=type=cache,target=/root/.cache/go-build GO111MODULE=on go install go.opentelemetry.io/collector/cmd/builder@v0.129.0
 RUN --mount=type=cache,target=/root/.cache/go-build builder --config manifest.yaml

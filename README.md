@@ -8,47 +8,72 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
 
 1. Create a collector configuration file. A very basic configuration may look like this:
 
-    ``` yaml
-    # collector-config.yaml
-    receivers:
-      profiling:
-        Tracers: "php,python"
-        SamplesPerSecond: 20
+   ``` yaml
+   # collector-config.yaml
+   receivers:
+     profiling:
+       Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
+       SamplesPerSecond: 20
 
-    # processors:
-    #   custom_profiles_processor:
-    #     foo: "bar"
+   # processors:
+   #   custom_profiles_processor:
+   #     foo: "bar"
 
-    exporters:
-      debug:
-        verbosity: normal
-    # custom_profiles_exporter:
-    #   bar: "baz"
+   exporters:
+     debug:
+       verbosity: normal
+     customprofilesexporter:
+       foo: "baz"
 
-    service:
-      pipelines:
-        profiles:
-          receivers:
-            - profiling
-    #     processors:
-    #       - custom_profiles_processor
-          exporters:
-            - debug
-    #       - custom_profiles_exporter
-    ```
+   service:
+     pipelines:
+       profiles:
+         receivers:
+           - profiling
+   #     processors:
+   #       - custom_profiles_processor
+         exporters:
+           - debug
+           - customprofilesexporter
+   ```
 2. Create and run collector in a new container from the image:
 
-    ```
-    docker run --name collector-ebpf-profiling-distro --privileged --pid=host -it --rm \
-      -v /sys/kernel/debug:/sys/kernel/debug \
-      -v /sys/fs/cgroup:/sys/fs/cgroup \
-      -v /proc:/proc \
-      -v $PWD/collector-config.yaml:/etc/config.yaml \
-      -p 4317:4317 -p 4318:4318 \
-      docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
-        --config=/etc/config.yaml \
-        --feature-gates=service.profilesSupport
-    ```
+   ```
+   docker run --name collector-ebpf-profiling-distro --privileged --pid=host -it --rm \
+     -v /sys/kernel/debug:/sys/kernel/debug \
+     -v /sys/fs/cgroup:/sys/fs/cgroup \
+     -v /proc:/proc \
+     -v $PWD/collector-config.yaml:/etc/config.yaml \
+     -p 4317:4317 -p 4318:4318 \
+     docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+       --config=/etc/config.yaml \
+       --feature-gates=service.profilesSupport
+   ```
+   ```
+   ------------------- New Sample -------------------
+     container.id: /../docker-d4f73fc52bbd83e58259256a0b321925bd1c43d0900904d4ed7c6113d1f9c4a4.scope/init
+     thread.name: buildkitd
+     process.executable.name: buildkitd
+     process.executable.path: /usr/bin/buildkitd
+     process.pid: 1921
+     thread.id: 2072
+   ---------------------------------------------------
+   Instrumentation: kernel, Function: link_path_walk.part.0.constprop.0, File: , Line: 0
+   Instrumentation: kernel, Function: path_lookupat, File: , Line: 0
+   Instrumentation: kernel, Function: filename_lookup, File: , Line: 0
+   Instrumentation: kernel, Function: vfs_statx, File: , Line: 0
+   Instrumentation: kernel, Function: vfs_fstatat, File: , Line: 0
+   Instrumentation: kernel, Function: __do_sys_newfstatat, File: , Line: 0
+   Instrumentation: kernel, Function: __x64_sys_newfstatat, File: , Line: 0
+   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0
+   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0
+   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0
+   Instrumentation: go, Function: internal/runtime/syscall.Syscall6, File: /usr/local/go/src/internal/runtime/syscall/asm_linux_amd64.s, Line: 36
+   Instrumentation: go, Function: syscall.RawSyscall6, File: /usr/local/go/src/syscall/syscall_linux.go, Line: 66
+   Instrumentation: go, Function: syscall.Syscall6, File: /usr/local/go/src/syscall/syscall_linux.go, Line: 96
+   Instrumentation: go, Function: syscall.fstatat, File: /usr/local/go/src/syscall/zsyscall_linux_amd64.go, Line: 1438
+   Instrumentation: go, Function: os.lstatNolog, File: /usr/local/go/src/syscall/syscall_linux_amd64.go, Line: 69
+   ```
 
 ## Example Kubernetes Deployment
 

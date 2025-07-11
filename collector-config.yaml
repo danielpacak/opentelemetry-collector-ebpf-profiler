@@ -1,8 +1,8 @@
 receivers:
   profiling:
     BpfVerifierLogLevel: 1
-    Tracers: php
-    SamplesPerSecond: 19
+    Tracers: "all"
+    SamplesPerSecond: 20
     VerboseMode: true
     SendErrorFrames: false
     OffCPUThreshold: 0
@@ -10,6 +10,14 @@ receivers:
 exporters:
   debug:
     verbosity: normal
+  customprofilesexporter:
+    foo: "baz"
+    export_sample_attributes: true
+#   export_unwind_types:
+#     - native
+#     - kernel
+#     - go
+#     - jvm
 
 service:
   pipelines:
@@ -18,3 +26,4 @@ service:
         - profiling
       exporters:
         - debug
+        - customprofilesexporter
