@@ -23,7 +23,14 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
      debug:
        verbosity: normal
      customprofilesexporter:
-       foo: "baz"
+       export_sample_attributes: true
+       export_unwind_types:
+         - native
+         - kernel
+         - go
+         - jvm
+         - php
+         - cpython
 
    service:
      pipelines:
@@ -76,6 +83,10 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
    ```
 
 ## Example Kubernetes Deployment
+
+```
+kubectl apply -f example/kubernetes/node-agent.yaml
+```
 
 ``` mermaid
 flowchart LR
@@ -136,7 +147,7 @@ docker compose up -d
 ```
 
 Pyroscope is accessible at http://localhost:4040 and Grafana at http://localhost:3000. Grafana is
-provisioned with the Pyroscope datasource so you can either see profiles in Pyroscope web UI of with
+provisioned with the Pyroscope datasource so you can either see profiles in Pyroscope web UI or with
 Grafana's Pyroscope application.
 
 ```

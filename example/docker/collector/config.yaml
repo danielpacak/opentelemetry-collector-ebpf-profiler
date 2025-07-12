@@ -18,6 +18,8 @@ exporters:
 #     - kernel
 #     - go
 #     - jvm
+#     - php
+#     - cpython
 
   otlp/profiles:
     endpoint: "http://pyroscope:4040"

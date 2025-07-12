@@ -11,13 +11,14 @@ exporters:
   debug:
     verbosity: normal
   customprofilesexporter:
-    foo: "baz"
     export_sample_attributes: true
 #   export_unwind_types:
 #     - native
 #     - kernel
 #     - go
 #     - jvm
+#     - php
+#     - cpython
 
 service:
   pipelines:

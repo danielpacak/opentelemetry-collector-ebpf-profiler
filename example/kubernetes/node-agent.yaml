@@ -1,0 +1,92 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: node-agent
+---
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collector
+  namespace: node-agent
+data:
+  config.yaml: |
+    receivers:
+      profiling:
+        Tracers: all
+        SamplesPerSecond: 20
+
+    exporters:
+      customprofilesexporter:
+        export_sample_attributes: true
+        export_unwind_types:
+         - native
+         - kernel
+         - go
+         - jvm
+         - cpython
+         - php
+
+    service:
+      pipelines:
+        profiles:
+          receivers:
+            - profiling
+          exporters:
+            - customprofilesexporter
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: collector-ebpf-profiler
+  namespace: node-agent
+spec:
+  selector:
+    matchLabels:
+      name: collector-ebpf-profiler
+  template:
+    metadata:
+      labels:
+        name: collector-ebpf-profiler
+    spec:
+      hostPID: true
+      containers:
+        - name: profiler
+          image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
+          args:
+            - --config=/etc/collector/config.yaml
+            - --feature-gates=service.profilesSupport
+          securityContext:
+            privileged: true
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/collector
+            - name: debugfs
+              mountPath: /sys/kernel/debug
+              readOnly: true
+            - name: cgroupfs
+              mountPath: /sys/fs/cgroup
+              readOnly: true
+            - name: procfs
+              mountPath: /proc
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: collector
+        - name: debugfs
+          hostPath:
+            path: /sys/kernel/debug
+        - name: cgroupfs
+          hostPath:
+            path: /sys/fs/cgroup
+        - name: procfs
+          hostPath:
+            path: /proc
