@@ -1,14 +1,18 @@
-FROM alpine:3.19 AS certs
+# syntax=docker/dockerfile:1
+
+ARG GO_VERSION=1.23.6
+
+FROM --platform=$BUILDPLATFORM alpine:3.19 AS certs
 RUN apk --update add ca-certificates
 
-FROM golang:1.23.6 AS build-stage
+FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build-stage
 WORKDIR /build
 
 COPY ./manifest.yaml manifest.yaml
 COPY ./exporter exporter
 
 RUN --mount=type=cache,target=/root/.cache/go-build GO111MODULE=on go install go.opentelemetry.io/collector/cmd/builder@v0.129.0
-RUN --mount=type=cache,target=/root/.cache/go-build builder --config manifest.yaml
+RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=1 GOARCH=$TARGETARCH builder --config manifest.yaml
 
 FROM gcr.io/distroless/base:latest
 
