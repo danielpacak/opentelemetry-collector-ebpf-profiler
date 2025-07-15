@@ -21,7 +21,6 @@ func NewFactory() exporter.Factory {
 
 func createDefaultConfig() component.Config {
 	return &customProfilesExporterConfig{
-		Foo:                    "bar",
 		ExportSampleAttributes: true,
 	}
 }

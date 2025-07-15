@@ -12,7 +12,6 @@ import (
 )
 
 type customProfilesExporterConfig struct {
-	Foo                    string   `mapstructure:"foo,omitempty"`
 	ExportSampleAttributes bool     `mapstructure:"export_sample_attributes"`
 	ExportUnwindTypes      []string `mapstructure:"export_unwind_types"`
 }
@@ -28,6 +27,12 @@ func (e *customProfilesExporter) Start(_ context.Context, _ component.Host) erro
 }
 
 func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles) error {
+	mappingTable := pd.ProfilesDictionary().MappingTable()
+	locationTable := pd.ProfilesDictionary().LocationTable()
+	attributeTable := pd.ProfilesDictionary().AttributeTable()
+	functionTable := pd.ProfilesDictionary().FunctionTable()
+	stringTable := pd.ProfilesDictionary().StringTable()
+
 	rps := pd.ResourceProfiles()
 	for i := 0; i < rps.Len(); i++ {
 		rp := rps.At(i)
@@ -39,11 +44,7 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 				profile := pcs.At(k)
 				profileLocationsIndices := profile.LocationIndices()
 
-				locations := pd.ProfilesDictionary().LocationTable()
-				attributesTable := pd.ProfilesDictionary().AttributeTable()
-				functions := pd.ProfilesDictionary().FunctionTable()
 				samples := profile.Sample()
-				stringTable := pd.ProfilesDictionary().StringTable()
 
 				// print the type of the sample
 				sampleType := "samples"
@@ -61,19 +62,19 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 					if e.config.ExportSampleAttributes {
 						sampleAttrs := sample.AttributeIndices()
 						for n := 0; n < sampleAttrs.Len(); n++ {
-							attr := attributesTable.At(int(sampleAttrs.At(n)))
+							attr := attributeTable.At(int(sampleAttrs.At(n)))
 							fmt.Printf("  %s: %s\n", attr.Key(), attr.Value().AsString())
 						}
 						fmt.Println("---------------------------------------------------")
 					}
 
 					for m := sample.LocationsStartIndex(); m < sample.LocationsStartIndex()+sample.LocationsLength(); m++ {
-						location := locations.At(int(profileLocationsIndices.At(int(m))))
+						location := locationTable.At(int(profileLocationsIndices.At(int(m))))
 						locationAttrs := location.AttributeIndices()
 
 						unwindType := "unknown"
 						for la := 0; la < locationAttrs.Len(); la++ {
-							attr := attributesTable.At(int(locationAttrs.At(la)))
+							attr := attributeTable.At(int(locationAttrs.At(la)))
 							if attr.Key() == "profile.frame.type" {
 								unwindType = attr.Value().AsString()
 								break
@@ -86,21 +87,22 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 						}
 
 						locationLine := location.Line()
-
 						if locationLine.Len() == 0 {
-							fmt.Printf("??? Instrumentation: %s ???\n", unwindType)
+							filename := "<unknown>"
+							if location.HasMappingIndex() {
+								mapping := mappingTable.At(int(location.MappingIndex()))
+								filename = stringTable.At(int(mapping.FilenameStrindex()))
+							}
+							fmt.Printf("Instrumentation: %s: Function: %#04x, File: %s\n", unwindType, location.Address(), filename)
 						}
 
 						for n := 0; n < locationLine.Len(); n++ {
-
 							line := locationLine.At(n)
-
-							function := functions.At(int(line.FunctionIndex()))
-							lineNumber := line.Line()
+							function := functionTable.At(int(line.FunctionIndex()))
 							functionName := stringTable.At(int(function.NameStrindex()))
 							fileName := stringTable.At(int(function.FilenameStrindex()))
-							fmt.Printf("Instrumentation: %s, Function: %s, File: %s, Line: %d\n",
-								unwindType, functionName, fileName, lineNumber)
+							fmt.Printf("Instrumentation: %s, Function: %s, File: %s, Line: %d, Column: %d\n",
+								unwindType, functionName, fileName, line.Line(), line.Column())
 						}
 					}
 					fmt.Println("------------------- End New Sample -------------------")
