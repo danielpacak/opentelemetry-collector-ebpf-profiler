@@ -163,7 +163,7 @@ docker compose down
 
    ```
    curl --proto '=https' --tlsv1.2 -fL -o ocb \
-   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.129.0/ocb_0.129.0_linux_amd64
+   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.130.0/ocb_0.130.0_linux_amd64
    chmod +x ocb
    ```
 
@@ -198,7 +198,7 @@ docker compose down
           --feature-gates=service.profilesSupport
       ```
 
-## Resources
+## Further Reading
 
 1. https://opentelemetry.io/docs/collector/distributions/
 2. https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler
@@ -206,5 +206,6 @@ docker compose down
 4. https://opentelemetry.io/docs/collector/custom-collector/
 5. https://blog.jaimyn.dev/how-to-build-multi-architecture-docker-images-on-an-m1-mac/
 6. https://github.com/grafana/pyroscope/blob/main/examples/grafana-alloy-auto-instrumentation/ebpf-otel/docker/docker-compose.yml
+7. https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md
 
 [eBPF profiler receiver]: https://github.com/open-telemetry/opentelemetry-ebpf-profiler
