@@ -23,7 +23,7 @@ processors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.130.0
 
 receivers:
-  - gomod: go.opentelemetry.io/ebpf-profiler v0.0.202530-0.20250717071107-27087156f2b6
+  - gomod: go.opentelemetry.io/ebpf-profiler v0.0.202530-0.20250721140932-6eb2c6110cbe
     import: go.opentelemetry.io/ebpf-profiler/collector
 
 providers:
