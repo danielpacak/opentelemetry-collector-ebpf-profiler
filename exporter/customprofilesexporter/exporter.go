@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strconv"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/pdata/pprofile"
@@ -12,8 +11,9 @@ import (
 )
 
 type customProfilesExporterConfig struct {
-	ExportSampleAttributes bool     `mapstructure:"export_sample_attributes"`
-	ExportUnwindTypes      []string `mapstructure:"export_unwind_types"`
+	ExportResourceAttributes bool     `mapstructure:"export_resource_attributes"`
+	ExportSampleAttributes   bool     `mapstructure:"export_sample_attributes"`
+	ExportUnwindTypes        []string `mapstructure:"export_unwind_types"`
 }
 
 type customProfilesExporter struct {
@@ -53,7 +53,8 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 					fmt.Println("SampleType: ", sampleType)
 				}
 				fmt.Println("------------------- New Profile -------------------")
-				fmt.Println("Dropped attributes count", strconv.FormatUint(uint64(profile.DroppedAttributesCount()), 10))
+				fmt.Printf("ProfileID: %x\n", [16]byte(profile.ProfileID()))
+				fmt.Printf("Dropped attributes count: %d\n", profile.DroppedAttributesCount())
 
 				for l := 0; l < samples.Len(); l++ {
 					sample := samples.At(l)
