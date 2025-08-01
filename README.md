@@ -163,7 +163,7 @@ docker compose down
 
    ```
    curl --proto '=https' --tlsv1.2 -fL -o ocb \
-   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.130.0/ocb_0.130.0_linux_amd64
+   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.131.0/ocb_0.131.0_linux_amd64
    chmod +x ocb
    ```
 

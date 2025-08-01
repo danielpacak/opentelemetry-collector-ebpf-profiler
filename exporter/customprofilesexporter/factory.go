@@ -31,7 +31,7 @@ func createProfiles(ctx context.Context, set exporter.Settings, config component
 		config: config.(*customProfilesExporterConfig),
 	}
 
-	return xexporterhelper.NewProfilesExporter(ctx, set, config,
+	return xexporterhelper.NewProfiles(ctx, set, config,
 		customExporter.ConsumeProfiles,
 		exporterhelper.WithStart(customExporter.Start),
 		exporterhelper.WithShutdown(customExporter.Close),

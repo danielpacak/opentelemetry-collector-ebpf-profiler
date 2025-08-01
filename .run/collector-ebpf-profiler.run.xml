@@ -5,7 +5,7 @@
     <parameters value="--config=$PROJECT_DIR$/collector-config.yaml --feature-gates=service.profilesSupport" />
     <sudo value="true" />
     <kind value="PACKAGE" />
-    <package value="go.opentelemetry.io/collector/cmd/builder" />
+    <package value="github.com/open-telemetry/opentelemetry-collector-releases/ebpf-profiler" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$/_build/main.go" />
     <method v="2" />

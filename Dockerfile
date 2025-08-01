@@ -11,7 +11,7 @@ WORKDIR /build
 COPY ./manifest.yaml manifest.yaml
 COPY ./exporter exporter
 
-RUN --mount=type=cache,target=/root/.cache/go-build GOARCH=$TARGETARCH go install go.opentelemetry.io/collector/cmd/builder@v0.130.0
+RUN --mount=type=cache,target=/root/.cache/go-build GOARCH=$TARGETARCH go install go.opentelemetry.io/collector/cmd/builder@v0.131.0
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOARCH=$TARGETARCH builder --config manifest.yaml
 
 FROM --platform=$BUILDPLATFORM gcr.io/distroless/base:latest
