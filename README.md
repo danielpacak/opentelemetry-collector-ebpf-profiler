@@ -1,5 +1,7 @@
 # OpenTelemetry Collector eBPF Profiling Distribution
 
+[![Publish to Docker Hub Container Image Library](https://github.com/danielpacak/opentelemetry-collector-ebpf-profiler/actions/workflows/docker-publish.yaml/badge.svg)](https://github.com/danielpacak/opentelemetry-collector-ebpf-profiler/actions/workflows/docker-publish.yaml)
+
 This OpenTelemetry Collector distribution is made specifically to be used as a node agent to gather
 profiles on all processes running on the system. It contains the [eBPF profiler receiver] as well as
 a subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
