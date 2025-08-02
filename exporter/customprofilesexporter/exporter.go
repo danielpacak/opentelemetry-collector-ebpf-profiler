@@ -41,11 +41,13 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 		rp := rps.At(i)
 		fmt.Println("------------------- New Resource -----------------")
 		if e.config.ExportResourceAttributes {
-			rp.Resource().Attributes().Range(func(k string, v pcommon.Value) bool {
-				fmt.Printf("  %s: %v\n", k, v.AsString())
+			if rp.Resource().Attributes().Len() > 0 {
+				rp.Resource().Attributes().Range(func(k string, v pcommon.Value) bool {
+					fmt.Printf("  %s: %v\n", k, v.AsString())
+					return true
+				})
 				fmt.Printf("---------------------------------------------------\n")
-				return true
-			})
+			}
 		}
 
 		sps := rp.ScopeProfiles()
