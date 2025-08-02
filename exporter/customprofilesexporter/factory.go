@@ -21,7 +21,10 @@ func NewFactory() exporter.Factory {
 
 func createDefaultConfig() component.Config {
 	return &customProfilesExporterConfig{
-		ExportSampleAttributes: true,
+		ExportResourceAttributes: true,
+		ExportProfileAttributes:  true,
+		ExportSampleAttributes:   true,
+		ExportStackFrames:        true,
 	}
 }
 

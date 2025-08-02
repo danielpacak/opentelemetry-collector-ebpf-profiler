@@ -8,11 +8,12 @@ receivers:
     OffCPUThreshold: 0
 
 exporters:
-  debug:
-    verbosity: normal
   customprofilesexporter:
+    export_resource_attributes: true
+    export_profile_attributes: true
     export_sample_attributes: true
-#   export_unwind_types:
+    export_stack_frames: true
+#   export_stack_frame_types:
 #     - native
 #     - kernel
 #     - go
@@ -31,6 +32,5 @@ service:
       receivers:
         - profiling
       exporters:
-        - debug
         - customprofilesexporter
         - otlp/profiles

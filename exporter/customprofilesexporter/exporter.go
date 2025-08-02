@@ -6,14 +6,17 @@ import (
 	"slices"
 
 	"go.opentelemetry.io/collector/component"
+	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/pprofile"
 	"go.uber.org/zap"
 )
 
 type customProfilesExporterConfig struct {
 	ExportResourceAttributes bool     `mapstructure:"export_resource_attributes"`
+	ExportProfileAttributes  bool     `mapstructure:"export_profile_attributes"`
 	ExportSampleAttributes   bool     `mapstructure:"export_sample_attributes"`
-	ExportUnwindTypes        []string `mapstructure:"export_unwind_types"`
+	ExportStackFrames        bool     `mapstructure:"export_stack_frames"`
+	ExportStackFrameTypes    []string `mapstructure:"export_stack_frame_types"`
 }
 
 type customProfilesExporter struct {
@@ -36,30 +39,44 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 	rps := pd.ResourceProfiles()
 	for i := 0; i < rps.Len(); i++ {
 		rp := rps.At(i)
+		fmt.Println("------------------- New Resource -----------------")
+		if e.config.ExportResourceAttributes {
+			rp.Resource().Attributes().Range(func(k string, v pcommon.Value) bool {
+				fmt.Printf("  %s: %v\n", k, v.AsString())
+				fmt.Printf("---------------------------------------------------\n")
+				return true
+			})
+		}
 
 		sps := rp.ScopeProfiles()
 		for j := 0; j < sps.Len(); j++ {
 			pcs := sps.At(j).Profiles()
 			for k := 0; k < pcs.Len(); k++ {
 				profile := pcs.At(k)
-				profileLocationsIndices := profile.LocationIndices()
 
-				samples := profile.Sample()
-
-				// print the type of the sample
+				fmt.Println("------------------- New Profile -------------------")
+				fmt.Printf("  ProfileID: %x\n", [16]byte(profile.ProfileID()))
+				fmt.Printf("  Dropped attributes count: %d\n", profile.DroppedAttributesCount())
 				sampleType := "samples"
 				for n := 0; n < profile.SampleType().Len(); n++ {
 					sampleType = stringTable.At(int(profile.SampleType().At(n).TypeStrindex()))
-					fmt.Println("SampleType: ", sampleType)
+					fmt.Printf("  SampleType: %s\n", sampleType)
 				}
-				fmt.Println("------------------- New Profile -------------------")
-				fmt.Printf("ProfileID: %x\n", [16]byte(profile.ProfileID()))
-				fmt.Printf("Dropped attributes count: %d\n", profile.DroppedAttributesCount())
+				profileAttrs := profile.AttributeIndices()
+				if profileAttrs.Len() > 0 {
+					for n := 0; n < profileAttrs.Len(); n++ {
+						attr := attributeTable.At(int(profileAttrs.At(n)))
+						fmt.Printf("  %s: %s\n", attr.Key(), attr.Value().AsString())
+					}
+					fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+				}
+
+				samples := profile.Sample()
 
 				for l := 0; l < samples.Len(); l++ {
 					sample := samples.At(l)
 
-					fmt.Println("------------------- New Sample -------------------")
+					fmt.Println("------------------- New Sample --------------------")
 					if e.config.ExportSampleAttributes {
 						sampleAttrs := sample.AttributeIndices()
 						for n := 0; n < sampleAttrs.Len(); n++ {
@@ -69,48 +86,55 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 						fmt.Println("---------------------------------------------------")
 					}
 
-					for m := sample.LocationsStartIndex(); m < sample.LocationsStartIndex()+sample.LocationsLength(); m++ {
-						location := locationTable.At(int(profileLocationsIndices.At(int(m))))
-						locationAttrs := location.AttributeIndices()
+					profileLocationsIndices := profile.LocationIndices()
 
-						unwindType := "unknown"
-						for la := 0; la < locationAttrs.Len(); la++ {
-							attr := attributeTable.At(int(locationAttrs.At(la)))
-							if attr.Key() == "profile.frame.type" {
-								unwindType = attr.Value().AsString()
-								break
+					if e.config.ExportStackFrames {
+						for m := sample.LocationsStartIndex(); m < sample.LocationsStartIndex()+sample.LocationsLength(); m++ {
+							location := locationTable.At(int(profileLocationsIndices.At(int(m))))
+							locationAttrs := location.AttributeIndices()
+
+							unwindType := "unknown"
+							for la := 0; la < locationAttrs.Len(); la++ {
+								attr := attributeTable.At(int(locationAttrs.At(la)))
+								if attr.Key() == "profile.frame.type" {
+									unwindType = attr.Value().AsString()
+									break
+								}
 							}
-						}
 
-						if len(e.config.ExportUnwindTypes) > 0 &&
-							!slices.Contains(e.config.ExportUnwindTypes, unwindType) {
-							continue
-						}
-
-						locationLine := location.Line()
-						if locationLine.Len() == 0 {
-							filename := "<unknown>"
-							if location.HasMappingIndex() {
-								mapping := mappingTable.At(int(location.MappingIndex()))
-								filename = stringTable.At(int(mapping.FilenameStrindex()))
+							if len(e.config.ExportStackFrameTypes) > 0 &&
+								!slices.Contains(e.config.ExportStackFrameTypes, unwindType) {
+								continue
 							}
-							fmt.Printf("Instrumentation: %s: Function: %#04x, File: %s\n", unwindType, location.Address(), filename)
-						}
 
-						for n := 0; n < locationLine.Len(); n++ {
-							line := locationLine.At(n)
-							function := functionTable.At(int(line.FunctionIndex()))
-							functionName := stringTable.At(int(function.NameStrindex()))
-							fileName := stringTable.At(int(function.FilenameStrindex()))
-							fmt.Printf("Instrumentation: %s, Function: %s, File: %s, Line: %d, Column: %d\n",
-								unwindType, functionName, fileName, line.Line(), line.Column())
+							locationLine := location.Line()
+							if locationLine.Len() == 0 {
+								filename := "<unknown>"
+								if location.HasMappingIndex() {
+									mapping := mappingTable.At(int(location.MappingIndex()))
+									filename = stringTable.At(int(mapping.FilenameStrindex()))
+								}
+								fmt.Printf("Instrumentation: %s: Function: %#04x, File: %s\n", unwindType, location.Address(), filename)
+							}
+
+							for n := 0; n < locationLine.Len(); n++ {
+								line := locationLine.At(n)
+								function := functionTable.At(int(line.FunctionIndex()))
+								functionName := stringTable.At(int(function.NameStrindex()))
+								fileName := stringTable.At(int(function.FilenameStrindex()))
+								fmt.Printf("Instrumentation: %s, Function: %s, File: %s, Line: %d, Column: %d\n",
+									unwindType, functionName, fileName, line.Line(), line.Column())
+							}
 						}
 					}
-					fmt.Println("------------------- End New Sample -------------------")
+
+					fmt.Println("------------------- End Sample --------------------")
 				}
-				fmt.Println("------------------- End of Profile -------------------")
+				fmt.Println("------------------- End Profile -------------------")
 			}
 		}
+
+		fmt.Printf("------------------- End Resource ------------------\n\n\n\n")
 	}
 	return nil
 }

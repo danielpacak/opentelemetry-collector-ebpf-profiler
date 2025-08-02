@@ -14,6 +14,10 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
      profiling:
        Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
        SamplesPerSecond: 20
+       BpfVerifierLogLevel: 1
+       VerboseMode: true
+       SendErrorFrames: false
+       OffCPUThreshold: 0
 
    # processors:
    #   custom_profiles_processor:
@@ -23,8 +27,11 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
      debug:
        verbosity: normal
      customprofilesexporter:
+       export_resource_attributes: true
+       export_profile_attributes: true
        export_sample_attributes: true
-       export_unwind_types:
+       export_stack_frames: true
+       export_stack_frame_types:
          - native
          - kernel
          - go
@@ -57,29 +64,104 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        --feature-gates=service.profilesSupport
    ```
    ```
-   ------------------- New Sample -------------------
-     container.id: /../docker-d4f73fc52bbd83e58259256a0b321925bd1c43d0900904d4ed7c6113d1f9c4a4.scope/init
-     thread.name: buildkitd
-     process.executable.name: buildkitd
-     process.executable.path: /usr/bin/buildkitd
-     process.pid: 1921
-     thread.id: 2072
+   ------------------- New Resource -----------------
+     container.id: e5db738b79589d83a5cf6aec3eeb14f6e63c5a15cdba0cb58712a440d523277c
    ---------------------------------------------------
-   Instrumentation: kernel, Function: link_path_walk.part.0.constprop.0, File: , Line: 0
-   Instrumentation: kernel, Function: path_lookupat, File: , Line: 0
-   Instrumentation: kernel, Function: filename_lookup, File: , Line: 0
-   Instrumentation: kernel, Function: vfs_statx, File: , Line: 0
-   Instrumentation: kernel, Function: vfs_fstatat, File: , Line: 0
-   Instrumentation: kernel, Function: __do_sys_newfstatat, File: , Line: 0
-   Instrumentation: kernel, Function: __x64_sys_newfstatat, File: , Line: 0
-   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0
-   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0
-   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0
-   Instrumentation: go, Function: internal/runtime/syscall.Syscall6, File: /usr/local/go/src/internal/runtime/syscall/asm_linux_amd64.s, Line: 36
-   Instrumentation: go, Function: syscall.RawSyscall6, File: /usr/local/go/src/syscall/syscall_linux.go, Line: 66
-   Instrumentation: go, Function: syscall.Syscall6, File: /usr/local/go/src/syscall/syscall_linux.go, Line: 96
-   Instrumentation: go, Function: syscall.fstatat, File: /usr/local/go/src/syscall/zsyscall_linux_amd64.go, Line: 1438
-   Instrumentation: go, Function: os.lstatNolog, File: /usr/local/go/src/syscall/syscall_linux_amd64.go, Line: 69
+   ------------------- New Profile -------------------
+     ProfileID: 00000000000000000000000000000000
+     Dropped attributes count: 0
+     SampleType: samples
+   ------------------- New Sample --------------------
+     thread.name: kube-apiserver
+     process.executable.name: kube-apiserver
+     process.executable.path: /usr/local/bin/kube-apiserver
+     process.pid: 2853
+     thread.id: 2902
+   ---------------------------------------------------
+   Instrumentation: go, Function: runtime.usleep, File: runtime/sys_linux_amd64.s, Line: 135, Column: 0
+   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
+   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
+   Instrumentation: go, Function: runtime.mstart1, File: runtime/proc.go, Line: 1834, Column: 0
+   Instrumentation: go, Function: runtime.mstart0, File: runtime/proc.go, Line: 1800, Column: 0
+   Instrumentation: go, Function: runtime.mstart, File: runtime/asm_amd64.s, Line: 396, Column: 0
+   ------------------- End Sample --------------------
+   ------------------- New Sample --------------------
+     thread.name: kube-apiserver
+     process.executable.name: kube-apiserver
+     process.executable.path: /usr/local/bin/kube-apiserver
+     process.pid: 2853
+     thread.id: 2919
+   ---------------------------------------------------
+   Instrumentation: kernel, Function: _raw_spin_unlock_irqrestore, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: try_to_wake_up, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: wake_up_q, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: futex_wake, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_futex, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: __x64_sys_futex, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
+   Instrumentation: go, Function: runtime.futex, File: runtime/sys_linux_amd64.s, Line: 558, Column: 0
+   Instrumentation: go, Function: runtime.futexwakeup, File: runtime/os_linux.go, Line: 82, Column: 0
+   Instrumentation: go, Function: runtime.notewakeup, File: runtime/lock_futex.go, Line: 156, Column: 0
+   Instrumentation: go, Function: runtime.startm, File: runtime/runtime1.go, Line: 612, Column: 0
+   Instrumentation: go, Function: runtime.wakep, File: runtime/runtime1.go, Line: 612, Column: 0
+   Instrumentation: go, Function: runtime.resetspinning, File: runtime/proc.go, Line: 3862, Column: 0
+   Instrumentation: go, Function: runtime.schedule, File: runtime/proc.go, Line: 4039, Column: 0
+   Instrumentation: go, Function: runtime.park_m, File: runtime/proc.go, Line: 4104, Column: 0
+   Instrumentation: go, Function: runtime.mcall, File: runtime/asm_amd64.s, Line: 463, Column: 0
+   ------------------- End Sample --------------------
+   ------------------- New Sample --------------------
+     thread.name: kube-apiserver
+     process.executable.name: kube-apiserver
+     process.executable.path: /usr/local/bin/kube-apiserver
+     process.pid: 2853
+     thread.id: 2904
+   ---------------------------------------------------
+   Instrumentation: kernel, Function: finish_task_switch.isra.0, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: __schedule, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: schedule, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: schedule_hrtimeout_range_clock, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: schedule_hrtimeout_range, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: ep_poll, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_epoll_wait, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_epoll_pwait.part.0, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: __x64_sys_epoll_pwait, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
+   Instrumentation: go, Function: internal/runtime/syscall.Syscall6, File: internal/runtime/syscall/asm_linux_amd64.s, Line: 36, Column: 0
+   Instrumentation: go, Function: internal/runtime/syscall.EpollWait, File: internal/runtime/syscall/syscall_linux.go, Line: 33, Column: 0
+   Instrumentation: go, Function: runtime.netpoll, File: runtime/netpoll_epoll.go, Line: 117, Column: 0
+   Instrumentation: go, Function: runtime.findRunnable, File: runtime/proc.go, Line: 3581, Column: 0
+   Instrumentation: go, Function: runtime.schedule, File: runtime/proc.go, Line: 3996, Column: 0
+   Instrumentation: go, Function: runtime.park_m, File: runtime/proc.go, Line: 4104, Column: 0
+   Instrumentation: go, Function: runtime.mcall, File: runtime/asm_amd64.s, Line: 463, Column: 0
+   ------------------- End Sample --------------------
+   ------------------- New Sample --------------------
+     thread.name: kube-apiserver
+     process.executable.name: kube-apiserver
+     process.executable.path: /usr/local/bin/kube-apiserver
+     process.pid: 2853
+     thread.id: 2902
+   ---------------------------------------------------
+   Instrumentation: kernel, Function: _raw_spin_unlock_irqrestore, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: hrtimer_start_range_ns, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_nanosleep, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: hrtimer_nanosleep, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: __x64_sys_nanosleep, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
+   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
+   Instrumentation: go, Function: runtime.usleep, File: runtime/sys_linux_amd64.s, Line: 135, Column: 0
+   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
+   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
+   Instrumentation: go, Function: runtime.mstart1, File: runtime/proc.go, Line: 1834, Column: 0
+   Instrumentation: go, Function: runtime.mstart0, File: runtime/proc.go, Line: 1800, Column: 0
+   Instrumentation: go, Function: runtime.mstart, File: runtime/asm_amd64.s, Line: 396, Column: 0
+   ------------------- End Sample --------------------
+   ------------------- End Profile -------------------
+   ------------------- End Resource ------------------
    ```
 
 ## Example Kubernetes Deployment

@@ -78,8 +78,10 @@ data:
         verbosity: normal
       customprofilesexporter:
         export_resource_attributes: true
+        export_profile_attributes: true
         export_sample_attributes: true
-        export_unwind_types:
+        export_stack_frames: true
+        export_stack_frame_types:
           - native
           - kernel
           - go
@@ -95,7 +97,6 @@ data:
           processors:
             - k8sattributes
           exporters:
-            - debug
             - customprofilesexporter
 ---
 apiVersion: apps/v1
