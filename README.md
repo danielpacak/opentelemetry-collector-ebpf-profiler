@@ -6,9 +6,13 @@ This OpenTelemetry Collector distribution is made specifically to be used as a n
 profiles on all processes running on the system. It contains the [eBPF profiler receiver] as well as
 a subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
 
+> The purpose of this repository is not to replace the official OpenTelemetry Collector eBPF
+> Profiling Distribution, but to play with an early, custom distribution until the upstream is
+> officially released.
+
 ## Quick Start
 
-1. Create a collector configuration file. A very basic configuration may look like this:
+1. Create a collector configuration file. A very basic configuration may look as follows:
 
    ``` yaml
    # collector-config.yaml
@@ -21,13 +25,7 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        SendErrorFrames: false
        OffCPUThreshold: 0
 
-   # processors:
-   #   custom_profiles_processor:
-   #     foo: "bar"
-
    exporters:
-     debug:
-       verbosity: normal
      customprofilesexporter:
        export_resource_attributes: true
        export_profile_attributes: true
@@ -46,13 +44,11 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        profiles:
          receivers:
            - profiling
-   #     processors:
-   #       - custom_profiles_processor
          exporters:
-           - debug
            - customprofilesexporter
    ```
-2. Create and run collector in a new container from the image:
+2. Create and run collector in a new container from the image that has already been published to the
+   Docker Hub container image library:
 
    ```
    docker run --name collector-ebpf-profiling-distro --privileged --pid=host -it --rm \
@@ -65,111 +61,148 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        --config=/etc/config.yaml \
        --feature-gates=service.profilesSupport
    ```
-   ```
-   ------------------- New Resource -----------------
-     container.id: e5db738b79589d83a5cf6aec3eeb14f6e63c5a15cdba0cb58712a440d523277c
-   ---------------------------------------------------
-   ------------------- New Profile -------------------
-     ProfileID: 00000000000000000000000000000000
-     Dropped attributes count: 0
-     SampleType: samples
-   ------------------- New Sample --------------------
-     thread.name: kube-apiserver
-     process.executable.name: kube-apiserver
-     process.executable.path: /usr/local/bin/kube-apiserver
-     process.pid: 2853
-     thread.id: 2902
-   ---------------------------------------------------
-   Instrumentation: go, Function: runtime.usleep, File: runtime/sys_linux_amd64.s, Line: 135, Column: 0
-   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
-   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
-   Instrumentation: go, Function: runtime.mstart1, File: runtime/proc.go, Line: 1834, Column: 0
-   Instrumentation: go, Function: runtime.mstart0, File: runtime/proc.go, Line: 1800, Column: 0
-   Instrumentation: go, Function: runtime.mstart, File: runtime/asm_amd64.s, Line: 396, Column: 0
-   ------------------- End Sample --------------------
-   ------------------- New Sample --------------------
-     thread.name: kube-apiserver
-     process.executable.name: kube-apiserver
-     process.executable.path: /usr/local/bin/kube-apiserver
-     process.pid: 2853
-     thread.id: 2919
-   ---------------------------------------------------
-   Instrumentation: kernel, Function: _raw_spin_unlock_irqrestore, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: try_to_wake_up, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: wake_up_q, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: futex_wake, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_futex, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: __x64_sys_futex, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
-   Instrumentation: go, Function: runtime.futex, File: runtime/sys_linux_amd64.s, Line: 558, Column: 0
-   Instrumentation: go, Function: runtime.futexwakeup, File: runtime/os_linux.go, Line: 82, Column: 0
-   Instrumentation: go, Function: runtime.notewakeup, File: runtime/lock_futex.go, Line: 156, Column: 0
-   Instrumentation: go, Function: runtime.startm, File: runtime/runtime1.go, Line: 612, Column: 0
-   Instrumentation: go, Function: runtime.wakep, File: runtime/runtime1.go, Line: 612, Column: 0
-   Instrumentation: go, Function: runtime.resetspinning, File: runtime/proc.go, Line: 3862, Column: 0
-   Instrumentation: go, Function: runtime.schedule, File: runtime/proc.go, Line: 4039, Column: 0
-   Instrumentation: go, Function: runtime.park_m, File: runtime/proc.go, Line: 4104, Column: 0
-   Instrumentation: go, Function: runtime.mcall, File: runtime/asm_amd64.s, Line: 463, Column: 0
-   ------------------- End Sample --------------------
-   ------------------- New Sample --------------------
-     thread.name: kube-apiserver
-     process.executable.name: kube-apiserver
-     process.executable.path: /usr/local/bin/kube-apiserver
-     process.pid: 2853
-     thread.id: 2904
-   ---------------------------------------------------
-   Instrumentation: kernel, Function: finish_task_switch.isra.0, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: __schedule, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: schedule, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: schedule_hrtimeout_range_clock, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: schedule_hrtimeout_range, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: ep_poll, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_epoll_wait, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_epoll_pwait.part.0, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: __x64_sys_epoll_pwait, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
-   Instrumentation: go, Function: internal/runtime/syscall.Syscall6, File: internal/runtime/syscall/asm_linux_amd64.s, Line: 36, Column: 0
-   Instrumentation: go, Function: internal/runtime/syscall.EpollWait, File: internal/runtime/syscall/syscall_linux.go, Line: 33, Column: 0
-   Instrumentation: go, Function: runtime.netpoll, File: runtime/netpoll_epoll.go, Line: 117, Column: 0
-   Instrumentation: go, Function: runtime.findRunnable, File: runtime/proc.go, Line: 3581, Column: 0
-   Instrumentation: go, Function: runtime.schedule, File: runtime/proc.go, Line: 3996, Column: 0
-   Instrumentation: go, Function: runtime.park_m, File: runtime/proc.go, Line: 4104, Column: 0
-   Instrumentation: go, Function: runtime.mcall, File: runtime/asm_amd64.s, Line: 463, Column: 0
-   ------------------- End Sample --------------------
-   ------------------- New Sample --------------------
-     thread.name: kube-apiserver
-     process.executable.name: kube-apiserver
-     process.executable.path: /usr/local/bin/kube-apiserver
-     process.pid: 2853
-     thread.id: 2902
-   ---------------------------------------------------
-   Instrumentation: kernel, Function: _raw_spin_unlock_irqrestore, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: hrtimer_start_range_ns, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_nanosleep, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: hrtimer_nanosleep, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: __x64_sys_nanosleep, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
-   Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
-   Instrumentation: go, Function: runtime.usleep, File: runtime/sys_linux_amd64.s, Line: 135, Column: 0
-   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
-   Instrumentation: go, Function: runtime.sysmon, File: runtime/proc.go, Line: 6063, Column: 0
-   Instrumentation: go, Function: runtime.mstart1, File: runtime/proc.go, Line: 1834, Column: 0
-   Instrumentation: go, Function: runtime.mstart0, File: runtime/proc.go, Line: 1800, Column: 0
-   Instrumentation: go, Function: runtime.mstart, File: runtime/asm_amd64.s, Line: 396, Column: 0
-   ------------------- End Sample --------------------
-   ------------------- End Profile -------------------
-   ------------------- End Resource ------------------
-   ```
 
 ## Example Kubernetes Deployment
 
+For Kubernetes deployment it's possible to add the [k8sattributes] processor to the profiles
+pipeline. The processor will enrich profiles with Kubernetes metadata by associating them with pods
+through the `container.id` resource attribute.
+
+``` yaml
+# collector-config.yaml
+receivers:
+  profiling:
+    Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
+    SamplesPerSecond: 20
+    BpfVerifierLogLevel: 1
+    VerboseMode: true
+    SendErrorFrames: false
+    OffCPUThreshold: 0
+
+processors:
+  k8sattributes:
+    auth_type: "serviceAccount"
+    passthrough: false
+    filter:
+      node_from_env_var: KUBERNETES_NODE_NAME
+    extract:
+      metadata:
+        - k8s.pod.name
+        - k8s.pod.uid
+        - k8s.deployment.name
+        - k8s.namespace.name
+        - service.namespace
+        - service.name
+        - service.version
+        - service.instance.id
+      labels:
+        - tag_name: app.label.component
+          key: app.kubernetes.io/component
+          from: pod
+      otel_annotations: true
+    pod_association:
+      - sources:
+          - from: resource_attribute
+            name: container.id
+
+exporters:
+  customprofilesexporter:
+    export_resource_attributes: true
+    export_profile_attributes: true
+    export_sample_attributes: true
+    export_stack_frames: true
+    export_stack_frame_types:
+      - native
+      - kernel
+      - go
+      - jvm
+      - php
+      - cpython
+
+service:
+  pipelines:
+    profiles:
+      receivers:
+        - profiling
+      processors:
+        - k8sattributes
+      exporters:
+        - customprofilesexporter
+
+```
+
 ```
 kubectl apply -f example/kubernetes/node-agent.yaml
+```
+
+``` console
+$ kubectl logs -n node-agent daemonsets/collector-ebpf-profiler
+------------------- New Resource -----------------
+  container.id: e5db738b79589d83a5cf6aec3eeb14f6e63c5a15cdba0cb58712a440d523277c
+  k8s.pod.name: kube-apiserver-kube-control-plane
+  service.name: kube-apiserver-kube-control-plane
+  k8s.namespace.name: kube-system
+  k8s.pod.uid: 34644f56-714b-46f5-baef-36eaf447bbd9
+  service.instance.id: kube-system.kube-apiserver-kube-control-plane.kube-apiserver
+  service.version: v1.32.5
+  service.namespace: kube-system
+---------------------------------------------------
+------------------- New Profile -------------------
+  ProfileID: 00000000000000000000000000000000
+  Dropped attributes count: 0
+  SampleType: samples
+------------------- New Sample --------------------
+  thread.name: kube-apiserver
+  process.executable.name: kube-apiserver
+  process.executable.path: /usr/local/bin/kube-apiserver
+  process.pid: 2853
+  thread.id: 2925
+---------------------------------------------------
+Instrumentation: go, Function: crypto/internal/bigmod.addMulVVW1024, File: crypto/internal/bigmod/nat_amd64.s, Line: 221, Column: 0
+Instrumentation: go, Function: crypto/internal/bigmod.(*Nat).montgomeryMul, File: crypto/internal/bigmod/nat.go, Line: 653, Column: 0
+Instrumentation: go, Function: crypto/internal/bigmod.(*Nat).Exp, File: crypto/internal/bigmod/nat.go, Line: 756, Column: 0
+Instrumentation: go, Function: crypto/rsa.decrypt, File: crypto/rsa/rsa.go, Line: 676, Column: 0
+Instrumentation: go, Function: crypto/rsa.signPSSWithSalt, File: crypto/rsa/pss.go, Line: 244, Column: 0
+Instrumentation: go, Function: crypto/rsa.SignPSS, File: crypto/rsa/pss.go, Line: 332, Column: 0
+Instrumentation: go, Function: crypto/rsa.(*PrivateKey).Sign, File: crypto/rsa/rsa.go, Line: 165, Column: 0
+Instrumentation: go, Function: crypto/tls.(*serverHandshakeStateTLS13).sendServerCertificate, File: crypto/tls/handshake_server_tls13.go, Line: 755, Column: 0
+Instrumentation: go, Function: crypto/tls.(*serverHandshakeStateTLS13).handshake, File: crypto/tls/handshake_server_tls13.go, Line: 68, Column: 0
+Instrumentation: go, Function: crypto/tls.(*Conn).serverHandshake, File: crypto/tls/handshake_server.go, Line: 54, Column: 0
+Instrumentation: go, Function: crypto/tls.(*Conn).serverHandshake-fm, File: <autogenerated>, Line: 1, Column: 0
+Instrumentation: go, Function: crypto/tls.(*Conn).handshakeContext, File: crypto/tls/conn.go, Line: 1568, Column: 0
+Instrumentation: go, Function: net/http.(*conn).serve, File: crypto/tls/conn.go, Line: 1508, Column: 0
+Instrumentation: go, Function: net/http.(*Server).Serve.gowrap3, File: net/http/server.go, Line: 3360, Column: 0
+Instrumentation: go, Function: runtime.goexit, File: runtime/asm_amd64.s, Line: 1701, Column: 0
+------------------- End Sample --------------------
+------------------- New Sample --------------------
+  thread.name: kube-apiserver
+  process.executable.name: kube-apiserver
+  process.executable.path: /usr/local/bin/kube-apiserver
+  process.pid: 2853
+  thread.id: 2905
+---------------------------------------------------
+Instrumentation: kernel, Function: finish_task_switch.isra.0, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: __schedule, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: schedule, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: futex_wait_queue, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: __futex_wait, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: futex_wait, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: do_futex, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: __x64_sys_futex, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: x64_sys_call, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: do_syscall_64, File: , Line: 0, Column: 0
+Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe, File: , Line: 0, Column: 0
+Instrumentation: go, Function: runtime.futex, File: runtime/sys_linux_amd64.s, Line: 558, Column: 0
+Instrumentation: go, Function: runtime.futexsleep, File: runtime/os_linux.go, Line: 69, Column: 0
+Instrumentation: go, Function: runtime.notesleep, File: runtime/lock_futex.go, Line: 171, Column: 0
+Instrumentation: go, Function: runtime.stopm, File: runtime/proc.go, Line: 1867, Column: 0
+Instrumentation: go, Function: runtime.findRunnable, File: runtime/proc.go, Line: 3258, Column: 0
+Instrumentation: go, Function: runtime.schedule, File: runtime/proc.go, Line: 3996, Column: 0
+Instrumentation: go, Function: runtime.park_m, File: runtime/proc.go, Line: 4104, Column: 0
+Instrumentation: go, Function: runtime.mcall, File: runtime/asm_amd64.s, Line: 463, Column: 0
+------------------- End Sample --------------------
+------------------- End Profile -------------------
+------------------- End Resource ------------------
 ```
 
 ``` mermaid
@@ -293,3 +326,5 @@ docker compose down
 7. https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md
 
 [eBPF profiler receiver]: https://github.com/open-telemetry/opentelemetry-ebpf-profiler
+
+[k8sattributes]: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md

@@ -118,7 +118,7 @@ spec:
       containers:
         - name: profiler
           image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           args:
             - --config=/etc/collector/config.yaml
             - --feature-gates=service.profilesSupport

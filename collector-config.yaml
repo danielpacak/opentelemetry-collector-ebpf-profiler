@@ -1,8 +1,8 @@
 receivers:
   profiling:
-    BpfVerifierLogLevel: 1
     Tracers: "all"
     SamplesPerSecond: 20
+    BpfVerifierLogLevel: 1
     VerboseMode: true
     SendErrorFrames: false
     OffCPUThreshold: 0
@@ -13,13 +13,13 @@ exporters:
     export_profile_attributes: true
     export_sample_attributes: true
     export_stack_frames: true
-#   export_stack_frame_types:
-#     - native
-#     - kernel
-#     - go
-#     - jvm
-#     - php
-#     - cpython
+    export_stack_frame_types:
+      - native
+      - kernel
+      - go
+      - jvm
+      - php
+      - cpython
 
 service:
   pipelines:
