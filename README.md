@@ -27,6 +27,7 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
 
    exporters:
      customprofilesexporter:
+       ignore_profiles_without_container_id: true
        export_resource_attributes: true
        export_profile_attributes: true
        export_sample_attributes: true
@@ -87,6 +88,7 @@ processors:
       node_from_env_var: KUBERNETES_NODE_NAME
     extract:
       metadata:
+        - k8s.container.name
         - k8s.pod.name
         - k8s.pod.uid
         - k8s.deployment.name
@@ -95,6 +97,9 @@ processors:
         - service.name
         - service.version
         - service.instance.id
+        - container.image.name
+        - container.image.tag
+        - container.image.repo_digests
       labels:
         - tag_name: app.label.component
           key: app.kubernetes.io/component
@@ -107,6 +112,7 @@ processors:
 
 exporters:
   customprofilesexporter:
+    ignore_profiles_without_container_id: true
     export_resource_attributes: true
     export_profile_attributes: true
     export_sample_attributes: true

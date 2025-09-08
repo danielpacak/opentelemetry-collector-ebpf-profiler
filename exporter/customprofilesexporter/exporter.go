@@ -12,11 +12,12 @@ import (
 )
 
 type customProfilesExporterConfig struct {
-	ExportResourceAttributes bool     `mapstructure:"export_resource_attributes"`
-	ExportProfileAttributes  bool     `mapstructure:"export_profile_attributes"`
-	ExportSampleAttributes   bool     `mapstructure:"export_sample_attributes"`
-	ExportStackFrames        bool     `mapstructure:"export_stack_frames"`
-	ExportStackFrameTypes    []string `mapstructure:"export_stack_frame_types"`
+	ExportResourceAttributes         bool     `mapstructure:"export_resource_attributes"`
+	ExportProfileAttributes          bool     `mapstructure:"export_profile_attributes"`
+	ExportSampleAttributes           bool     `mapstructure:"export_sample_attributes"`
+	ExportStackFrames                bool     `mapstructure:"export_stack_frames"`
+	ExportStackFrameTypes            []string `mapstructure:"export_stack_frame_types"`
+	IgnoreProfilesWithoutContainerID bool     `mapstructure:"ignore_profiles_without_container_id"`
 }
 
 type customProfilesExporter struct {
@@ -39,14 +40,24 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 	rps := pd.ResourceProfiles()
 	for i := 0; i < rps.Len(); i++ {
 		rp := rps.At(i)
-		fmt.Println("------------------- New Resource -----------------")
+
+		if e.config.IgnoreProfilesWithoutContainerID {
+			containerID, ok := rp.Resource().Attributes().Get("container.id")
+			if !ok || containerID.AsString() == "" {
+				fmt.Println("--------------- New Resource Profile --------------")
+				fmt.Println("              SKIPPED (no container.id)")
+				fmt.Printf("-------------- End Resource Profile ---------------\n\n")
+				continue
+			}
+		}
+
+		fmt.Println("--------------- New Resource Profile --------------")
 		if e.config.ExportResourceAttributes {
 			if rp.Resource().Attributes().Len() > 0 {
 				rp.Resource().Attributes().Range(func(k string, v pcommon.Value) bool {
 					fmt.Printf("  %s: %v\n", k, v.AsString())
 					return true
 				})
-				fmt.Printf("---------------------------------------------------\n")
 			}
 		}
 
@@ -136,7 +147,7 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 			}
 		}
 
-		fmt.Printf("------------------- End Resource ------------------\n\n\n\n")
+		fmt.Printf("-------------- End Resource Profile ---------------\n\n")
 	}
 	return nil
 }

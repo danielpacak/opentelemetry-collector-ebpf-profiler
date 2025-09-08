@@ -81,6 +81,7 @@ data:
       debug:
         verbosity: normal
       customprofilesexporter:
+        ignore_profiles_without_container_id: true
         export_resource_attributes: true
         export_profile_attributes: true
         export_sample_attributes: true
