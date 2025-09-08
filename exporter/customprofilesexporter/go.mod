@@ -2,8 +2,6 @@ module customprofilesexporter
 
 go 1.24
 
-toolchain go1.24.3
-
 require (
 	go.opentelemetry.io/collector/component v1.40.0
 	go.opentelemetry.io/collector/consumer v1.40.0

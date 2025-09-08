@@ -48,7 +48,11 @@ data:
         SamplesPerSecond: 20
 
     processors:
+      customprofilesexporter:
+        foo: "bar"
       k8sattributes:
+        wait_for_metadata: true
+        wait_for_metadata_timeout: 10s
         auth_type: "serviceAccount"
         passthrough: false
         filter:
@@ -101,6 +105,7 @@ data:
             - profiling
           processors:
             - k8sattributes
+            - customprofilesexporter
           exporters:
             - customprofilesexporter
 ---

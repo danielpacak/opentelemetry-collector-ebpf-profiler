@@ -7,6 +7,10 @@ receivers:
     SendErrorFrames: false
     OffCPUThreshold: 0
 
+processors:
+  customprofilesprocessor:
+    foo: "bar"
+
 exporters:
   customprofilesexporter:
     export_resource_attributes: true
@@ -26,5 +30,7 @@ service:
     profiles:
       receivers:
         - profiling
+      processors:
+        - customprofilesprocessor
       exporters:
         - customprofilesexporter

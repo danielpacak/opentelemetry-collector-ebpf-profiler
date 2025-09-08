@@ -26,6 +26,10 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        SendErrorFrames: false
        OffCPUThreshold: 0
 
+   processors:
+     customprofilesexporter:
+       foo: "bar"
+
    exporters:
      customprofilesexporter:
        ignore_profiles_without_container_id: true
@@ -46,6 +50,8 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        profiles:
          receivers:
            - profiling
+         processors:
+           - customprofilesexporter
          exporters:
            - customprofilesexporter
    ```
@@ -83,6 +89,8 @@ receivers:
 
 processors:
   k8sattributes:
+    wait_for_metadata: true
+    wait_for_metadata_timeout: 10s
     auth_type: "serviceAccount"
     passthrough: false
     filter:
