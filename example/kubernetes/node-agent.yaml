@@ -48,7 +48,7 @@ data:
         SamplesPerSecond: 20
 
     processors:
-      customprofilesexporter:
+      customprofilesprocessor:
         foo: "bar"
       k8sattributes:
         wait_for_metadata: true
@@ -105,7 +105,7 @@ data:
             - profiling
           processors:
             - k8sattributes
-            - customprofilesexporter
+            - customprofilesprocessor
           exporters:
             - customprofilesexporter
 ---
