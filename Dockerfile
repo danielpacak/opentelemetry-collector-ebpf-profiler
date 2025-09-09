@@ -9,6 +9,7 @@ FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build-stage
 WORKDIR /build
 
 COPY ./manifest.yaml manifest.yaml
+COPY ./processor processor
 COPY ./exporter exporter
 
 RUN --mount=type=cache,target=/root/.cache/go-build GOARCH=$TARGETARCH go install go.opentelemetry.io/collector/cmd/builder@v0.134.0
