@@ -1,7 +1,12 @@
 name: Publish to Docker Hub Container Image Library
 
 on:
-  workflow_dispatch: { }
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: "Docker image tag"
+        required: true
+        default: "v0.134.0"
 
 jobs:
   publish:
@@ -33,6 +38,7 @@ jobs:
           context: .
           file: Dockerfile
           tags: |
+            docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:${{ github.event.inputs.imageTag }}
             docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
           push: ${{ github.event_name != 'pull_request' }}
           platforms: ${{ env.PLATFORMS }}
