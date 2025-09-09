@@ -31,11 +31,11 @@ func (e *customProfilesExporter) Start(_ context.Context, _ component.Host) erro
 }
 
 func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles) error {
-	mappingTable := pd.ProfilesDictionary().MappingTable()
-	locationTable := pd.ProfilesDictionary().LocationTable()
-	attributeTable := pd.ProfilesDictionary().AttributeTable()
-	functionTable := pd.ProfilesDictionary().FunctionTable()
-	stringTable := pd.ProfilesDictionary().StringTable()
+	mappingTable := pd.Dictionary().MappingTable()
+	locationTable := pd.Dictionary().LocationTable()
+	attributeTable := pd.Dictionary().AttributeTable()
+	functionTable := pd.Dictionary().FunctionTable()
+	stringTable := pd.Dictionary().StringTable()
 
 	rps := pd.ResourceProfiles()
 	for i := 0; i < rps.Len(); i++ {

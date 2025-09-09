@@ -51,7 +51,7 @@ func createProfilesProcessorWithOptions(
 	nextProfilesConsumer xconsumer.Profiles,
 	options ...option,
 ) (xprocessor.Profiles, error) {
-	kp := createKubernetesProcessor(set, cfg, options...)
+	kp := createCustomProcessor(set, cfg, options...)
 
 	return xprocessorhelper.NewProfiles(
 		ctx,
@@ -65,7 +65,7 @@ func createProfilesProcessorWithOptions(
 	)
 }
 
-func createKubernetesProcessor(
+func createCustomProcessor(
 	params processor.Settings,
 	cfg component.Config,
 	options ...option,
@@ -78,4 +78,14 @@ func createKubernetesProcessor(
 	}
 
 	return kp
+}
+
+func createProcessorOpts(cfg component.Config) []option {
+	oCfg := cfg.(*Config)
+	var opts []option
+
+	opts = append(opts,
+		withFoo(oCfg.Foo))
+
+	return opts
 }
