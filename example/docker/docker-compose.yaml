@@ -1,6 +1,7 @@
 services:
   collector-ebpf-profiler:
-    image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
+    # image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
+    image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:v0.134.0
     command:
       - "--config=/etc/collector-config.yaml"
       - "--feature-gates=service.profilesSupport"
