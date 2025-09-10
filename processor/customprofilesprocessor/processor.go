@@ -2,7 +2,6 @@ package customprofilesprocessor
 
 import (
 	"context"
-	"fmt"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/component/componentstatus"
@@ -11,16 +10,17 @@ import (
 )
 
 type customprocessor struct {
-	cfg               component.Config
-	options           []option
 	logger            *zap.Logger
+	config            component.Config
+	options           []option
 	telemetrySettings component.TelemetrySettings
 
 	foo string
 }
 
 func (kp *customprocessor) Start(_ context.Context, host component.Host) error {
-	allOptions := append(createProcessorOpts(kp.cfg), kp.options...)
+	kp.logger.Info("Starting custom profiles processor")
+	allOptions := append(createProcessorOpts(kp.config), kp.options...)
 
 	for _, opt := range allOptions {
 		if err := opt(kp); err != nil {
@@ -34,6 +34,7 @@ func (kp *customprocessor) Start(_ context.Context, host component.Host) error {
 }
 
 func (kp *customprocessor) Shutdown(context.Context) error {
+	kp.logger.Info("Shutting down custom profiles processor")
 	return nil
 }
 
@@ -41,7 +42,8 @@ func (kp *customprocessor) processProfiles(_ context.Context, pd pprofile.Profil
 	rp := pd.ResourceProfiles()
 
 	for i := 0; i < rp.Len(); i++ {
-		fmt.Printf(">>> Custom processing of profiles with resource attributes: %v\n", rp.At(i).Resource().Attributes().AsRaw())
+		kp.logger.Info("Adding custom resource attribute",
+			zap.Any("attributes", rp.At(i).Resource().Attributes().AsRaw()))
 		rp.At(i).Resource().Attributes().PutStr("foo", kp.foo)
 	}
 

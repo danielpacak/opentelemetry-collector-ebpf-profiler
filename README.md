@@ -25,6 +25,8 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        VerboseMode: true
        SendErrorFrames: false
        OffCPUThreshold: 0
+     customprofilesreceiver:
+       report_interval: 5s
 
    processors:
      customprofilesexporter:
@@ -50,6 +52,7 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        profiles:
          receivers:
            - profiling
+           - customprofilesreceiver
          processors:
            - customprofilesexporter
          exporters:

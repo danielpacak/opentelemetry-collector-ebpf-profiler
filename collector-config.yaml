@@ -6,6 +6,9 @@ receivers:
     VerboseMode: true
     SendErrorFrames: false
     OffCPUThreshold: 0
+  customprofilesreceiver:
+    foo: "bar"
+    report_interval: 5s
 
 processors:
   customprofilesprocessor:
@@ -30,6 +33,7 @@ service:
     profiles:
       receivers:
         - profiling
+        - customprofilesreceiver
       processors:
         - customprofilesprocessor
       exporters:

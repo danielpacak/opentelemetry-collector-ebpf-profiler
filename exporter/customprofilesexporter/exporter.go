@@ -11,26 +11,17 @@ import (
 	"go.uber.org/zap"
 )
 
-type customProfilesExporterConfig struct {
-	ExportResourceAttributes         bool     `mapstructure:"export_resource_attributes"`
-	ExportProfileAttributes          bool     `mapstructure:"export_profile_attributes"`
-	ExportSampleAttributes           bool     `mapstructure:"export_sample_attributes"`
-	ExportStackFrames                bool     `mapstructure:"export_stack_frames"`
-	ExportStackFrameTypes            []string `mapstructure:"export_stack_frame_types"`
-	IgnoreProfilesWithoutContainerID bool     `mapstructure:"ignore_profiles_without_container_id"`
-}
-
-type customProfilesExporter struct {
+type customexporter struct {
 	logger *zap.Logger
-	config *customProfilesExporterConfig
+	config *Config
 }
 
-func (e *customProfilesExporter) Start(_ context.Context, _ component.Host) error {
+func (e *customexporter) Start(_ context.Context, _ component.Host) error {
 	e.logger.Info("Starting custom profiles exporter...")
 	return nil
 }
 
-func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles) error {
+func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles) error {
 	mappingTable := pd.Dictionary().MappingTable()
 	locationTable := pd.Dictionary().LocationTable()
 	attributeTable := pd.Dictionary().AttributeTable()
@@ -152,7 +143,7 @@ func (e *customProfilesExporter) ConsumeProfiles(_ context.Context, pd pprofile.
 	return nil
 }
 
-func (e *customProfilesExporter) Close(_ context.Context) error {
+func (e *customexporter) Close(_ context.Context) error {
 	e.logger.Info("Closing custom profiles exporter...")
 	return nil
 }
