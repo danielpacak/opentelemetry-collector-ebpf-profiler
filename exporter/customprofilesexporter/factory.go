@@ -11,16 +11,20 @@ import (
 	"go.opentelemetry.io/collector/exporter/xexporter"
 )
 
+var (
+	strType = component.MustNewType("customprofilesexporter")
+)
+
 func NewFactory() exporter.Factory {
 	return xexporter.NewFactory(
-		component.MustNewType("customprofilesexporter"),
+		strType,
 		createDefaultConfig,
 		xexporter.WithProfiles(createProfiles, component.StabilityLevelDevelopment),
 	)
 }
 
 func createDefaultConfig() component.Config {
-	return &customProfilesExporterConfig{
+	return &Config{
 		ExportResourceAttributes:         true,
 		ExportProfileAttributes:          true,
 		ExportSampleAttributes:           true,
@@ -30,9 +34,9 @@ func createDefaultConfig() component.Config {
 }
 
 func createProfiles(ctx context.Context, set exporter.Settings, config component.Config) (xexporter.Profiles, error) {
-	customExporter := &customProfilesExporter{
+	customExporter := &customexporter{
 		logger: set.Logger,
-		config: config.(*customProfilesExporterConfig),
+		config: config.(*Config),
 	}
 
 	return xexporterhelper.NewProfiles(ctx, set, config,

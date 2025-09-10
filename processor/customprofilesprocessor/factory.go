@@ -67,12 +67,12 @@ func createProfilesProcessorWithOptions(
 
 func createCustomProcessor(
 	params processor.Settings,
-	cfg component.Config,
+	config component.Config,
 	options ...option,
 ) *customprocessor {
 	kp := &customprocessor{
 		logger:            params.Logger,
-		cfg:               cfg,
+		config:            config,
 		options:           options,
 		telemetrySettings: params.TelemetrySettings,
 	}
