@@ -75,7 +75,7 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
 
 ## Example Kubernetes Deployment
 
-For Kubernetes deployment it's possible to add the [k8sattributes] processor to the profiles
+For Kubernetes deployment it's possible to add the [Kubernetes Attributes Processor] to the profiles
 pipeline. The processor will enrich profiles with Kubernetes metadata by associating them with pods
 through the `container.id` resource attribute.
 
@@ -333,6 +333,23 @@ docker compose down
           --feature-gates=service.profilesSupport
       ```
 
+## Building and Running on macOS
+
+```
+brew install lima
+```
+
+```
+limactl start --name=collector-ebpf-profiler \
+  --vm-type=vz --mount-type=virtiofs \
+  --tty=false \
+  .lima/template.yaml
+```
+
+```
+limactl shell collector-ebpf-profiler
+```
+
 ## Further Reading
 
 1. https://opentelemetry.io/docs/collector/distributions/
@@ -344,9 +361,5 @@ docker compose down
 7. https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md
 
 [eBPF profiler receiver]: https://github.com/open-telemetry/opentelemetry-ebpf-profiler
-
-[k8sattributes]: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md
-
-
-
+[Kubernetes Attributes Processor]: https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/processor/k8sattributesprocessor/README.md
 [docker-pulls]: https://img.shields.io/docker/pulls/danielpacak/opentelemetry-collector-ebpf-profiler?logo=docker&label=Docker%20Hub%20Pulls
