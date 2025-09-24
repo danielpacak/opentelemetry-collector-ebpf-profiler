@@ -16,7 +16,7 @@ metadata:
   name: node-agent-watch-workloads
 rules:
   - apiGroups: [ "" ]
-    resources: [ "pods" ]
+    resources: [ "pods", "namespaces" ]
     verbs: [ "get", "watch", "list" ]
   - apiGroups: [ "apps"]
     resources: [ "replicasets", "deployments"]
@@ -59,9 +59,11 @@ data:
           node_from_env_var: KUBERNETES_NODE_NAME
         extract:
           metadata:
-            - k8s.container.name
-            - k8s.pod.name
+            - k8s.cluster.uid
+            - k8s.node.name
             - k8s.pod.uid
+            - k8s.pod.name
+            - k8s.container.name
             - k8s.deployment.name
             - k8s.namespace.name
             - service.namespace
@@ -71,10 +73,6 @@ data:
             - container.image.name
             - container.image.tag
             - container.image.repo_digests
-          labels:
-            - tag_name: app.label.component
-              key: app.kubernetes.io/component
-              from: pod
           otel_annotations: true
         pod_association:
           - sources:
@@ -128,6 +126,7 @@ spec:
       containers:
         - name: profiler
           # image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
+          # imagePullPolicy: IfNotPresent
           image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:v0.134.0
           imagePullPolicy: Always
           args:

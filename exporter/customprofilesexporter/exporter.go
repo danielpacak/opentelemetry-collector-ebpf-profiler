@@ -46,7 +46,7 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 		if e.config.ExportResourceAttributes {
 			if rp.Resource().Attributes().Len() > 0 {
 				rp.Resource().Attributes().Range(func(k string, v pcommon.Value) bool {
-					fmt.Printf("  %s: %v\n", k, v.AsString())
+					fmt.Printf("  %s: %s (%s)\n", k, v.AsString(), v.Type().String())
 					return true
 				})
 			}
@@ -70,7 +70,7 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 				if profileAttrs.Len() > 0 {
 					for n := 0; n < profileAttrs.Len(); n++ {
 						attr := attributeTable.At(int(profileAttrs.At(n)))
-						fmt.Printf("  %s: %s\n", attr.Key(), attr.Value().AsString())
+						fmt.Printf("  %s: %s (%s)\n", attr.Key(), attr.Value().AsString(), attr.Value().Type().String())
 					}
 					fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 				}
@@ -85,7 +85,7 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 						sampleAttrs := sample.AttributeIndices()
 						for n := 0; n < sampleAttrs.Len(); n++ {
 							attr := attributeTable.At(int(sampleAttrs.At(n)))
-							fmt.Printf("  %s: %s\n", attr.Key(), attr.Value().AsString())
+							fmt.Printf("  %s: %s (%s)\n", attr.Key(), attr.Value().AsString(), attr.Value().Type().String())
 						}
 						fmt.Println("---------------------------------------------------")
 					}

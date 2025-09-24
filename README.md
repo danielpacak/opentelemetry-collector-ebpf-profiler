@@ -100,9 +100,11 @@ processors:
       node_from_env_var: KUBERNETES_NODE_NAME
     extract:
       metadata:
-        - k8s.container.name
-        - k8s.pod.name
+        - k8s.cluster.uid
+        - k8s.node.name
         - k8s.pod.uid
+        - k8s.pod.name
+        - k8s.container.name
         - k8s.deployment.name
         - k8s.namespace.name
         - service.namespace
@@ -112,10 +114,6 @@ processors:
         - container.image.name
         - container.image.tag
         - container.image.repo_digests
-      labels:
-        - tag_name: app.label.component
-          key: app.kubernetes.io/component
-          from: pod
       otel_annotations: true
     pod_association:
       - sources:
@@ -146,7 +144,6 @@ service:
         - k8sattributes
       exporters:
         - customprofilesexporter
-
 ```
 
 ```
@@ -314,11 +311,16 @@ docker compose down
       docker run --rm --privileged tonistiigi/binfmt --install all
       docker buildx create --name mybuilder --use
       ```
-   2. Build the Docker image as Linux AMD and ARM, and load the build result to "docker images":
+   2. Build the Docker image as Linux AMD or ARM, and load the build result to "docker images":
       ```
       docker buildx build --load \
         -t docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
-        --platform=linux/amd64,linux/arm64 .
+        --platform=linux/amd64 .
+      ```
+      ```
+      docker buildx build --load \
+        -t docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
+        --platform=linux/arm64 .
       ```
    3. Test the newly-built image:
       ```
