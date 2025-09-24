@@ -17,7 +17,7 @@ type customexporter struct {
 }
 
 func (e *customexporter) Start(_ context.Context, _ component.Host) error {
-	e.logger.Info("Starting custom profiles exporter...")
+	e.logger.Info("Starting custom profiles exporter...", zap.Any("config", e.config))
 	return nil
 }
 
@@ -126,8 +126,7 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 								function := functionTable.At(int(line.FunctionIndex()))
 								functionName := stringTable.At(int(function.NameStrindex()))
 								fileName := stringTable.At(int(function.FilenameStrindex()))
-								fmt.Printf("Instrumentation: %s, Function: %s, File: %s, Line: %d, Column: %d\n",
-									unwindType, functionName, fileName, line.Line(), line.Column())
+								e.consumeFunction(unwindType, functionName, fileName, line.Line(), line.Column())
 							}
 						}
 					}
@@ -141,6 +140,16 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 		fmt.Printf("-------------- End Resource Profile ---------------\n\n")
 	}
 	return nil
+}
+
+func (e *customexporter) consumeFunction(frameType, functionName, fileName string, line, column int64) {
+	if e.config.ExportFunctionFile {
+		fmt.Printf("Instrumentation: %s, Function: %s, File: %s, Line: %d, Column: %d\n",
+			frameType, functionName, fileName, line, column)
+	} else {
+		fmt.Printf("Instrumentation: %s, Function: %s\n",
+			frameType, functionName)
+	}
 }
 
 func (e *customexporter) Close(_ context.Context) error {

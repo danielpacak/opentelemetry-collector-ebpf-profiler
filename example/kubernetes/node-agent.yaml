@@ -95,6 +95,7 @@ data:
           - jvm
           - cpython
           - php
+        export_function_file: false
 
     service:
       pipelines:

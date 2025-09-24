@@ -29,6 +29,7 @@ func createDefaultConfig() component.Config {
 		ExportProfileAttributes:          true,
 		ExportSampleAttributes:           true,
 		ExportStackFrames:                true,
+		ExportFunctionFile:               false,
 		IgnoreProfilesWithoutContainerID: true,
 	}
 }
