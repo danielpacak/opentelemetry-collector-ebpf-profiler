@@ -74,7 +74,9 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
        --feature-gates=service.profilesSupport
    ```
 
-## Example Kubernetes Deployment
+## Example Kubernetes Deployments
+
+### Simple
 
 For Kubernetes deployment it's possible to add the [Kubernetes Attributes Processor] to the profiles
 pipeline. The processor will enrich profiles with Kubernetes metadata by associating them with pods
@@ -148,7 +150,7 @@ service:
 ```
 
 ```
-kubectl apply -f example/kubernetes/node-agent.yaml
+kubectl apply -k example/kubernetes/simple
 ```
 
 ``` console
@@ -296,6 +298,18 @@ Instrumentation: go, Function: runtime.mcall
 ------------------- End Profile -------------------
 -------------- End Resource Profile ---------------
 ```
+
+### Pyroscope
+
+```
+kubectl apply -k example/kubernetes/pyroscope
+```
+
+```
+kubectl port-forward -n pyroscope svc/pyroscope 4040
+```
+
+![](./docs/pyroscope.png)
 
 ``` mermaid
 flowchart LR

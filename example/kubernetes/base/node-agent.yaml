@@ -1,10 +1,5 @@
 ---
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: node-agent
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: node-agent
@@ -34,79 +29,6 @@ subjects:
   - kind: ServiceAccount
     name: node-agent
     namespace: node-agent
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: collector
-  namespace: node-agent
-data:
-  config.yaml: |
-    receivers:
-      profiling:
-        Tracers: all
-        SamplesPerSecond: 20
-
-    processors:
-      customprofilesprocessor:
-        foo: "bar"
-      k8sattributes:
-        wait_for_metadata: true
-        wait_for_metadata_timeout: 10s
-        auth_type: "serviceAccount"
-        passthrough: false
-        filter:
-          node_from_env_var: KUBERNETES_NODE_NAME
-        extract:
-          metadata:
-            - k8s.cluster.uid
-            - k8s.node.name
-            - k8s.pod.uid
-            - k8s.pod.name
-            - k8s.container.name
-            - k8s.deployment.name
-            - k8s.namespace.name
-            - service.namespace
-            - service.name
-            - service.version
-            - service.instance.id
-            - container.image.name
-            - container.image.tag
-            - container.image.repo_digests
-          otel_annotations: true
-        pod_association:
-          - sources:
-              - from: resource_attribute
-                name: container.id
-
-    exporters:
-      debug:
-        verbosity: normal
-      customprofilesexporter:
-        ignore_profiles_without_container_id: true
-        export_resource_attributes: true
-        export_profile_attributes: true
-        export_sample_attributes: true
-        export_stack_frames: true
-        export_stack_frame_types:
-          - native
-          - kernel
-          - go
-          - jvm
-          - cpython
-          - php
-        export_function_file: false
-
-    service:
-      pipelines:
-        profiles:
-          receivers:
-            - profiling
-          processors:
-            - k8sattributes
-            - customprofilesprocessor
-          exporters:
-            - customprofilesexporter
 ---
 apiVersion: apps/v1
 kind: DaemonSet
