@@ -1,0 +1,53 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lazybackend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lazybackend
+  namespace: lazybackend
+  labels:
+    app: lazybackend
+spec:
+  ports:
+    - name: otlpgrpc
+      protocol: TCP
+      port: 4137
+      targetPort: 4137
+    - name: metrics
+      protocol: TCP
+      port: 2112
+      targetPort: 2112
+  selector:
+    app: lazybackend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lazybackend
+  namespace: lazybackend
+  labels:
+    app: lazybackend
+spec:
+  selector:
+    matchLabels:
+      app: lazybackend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lazybackend
+    spec:
+      containers:
+        - name: lazybackend
+          image: docker.io/danielpacak/opentelemetry-lazybackend:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-address=0.0.0.0:4137"
+            - "-metrics=0.0.0.0:2112"
+          ports:
+            - containerPort: 4137
+            - containerPort: 2112
