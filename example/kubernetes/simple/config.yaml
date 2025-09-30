@@ -61,7 +61,13 @@ data:
           - php
         export_function_file: false
 
+    extensions:
+      pprof:
+        endpoint: ":1777"
+
     service:
+      extensions:
+        - pprof
       pipelines:
         profiles:
           receivers:

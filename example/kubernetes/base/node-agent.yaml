@@ -62,6 +62,8 @@ spec:
                   fieldPath: spec.nodeName
           securityContext:
             privileged: true
+          ports:
+            - containerPort: 1777
           resources:
             requests:
               cpu: 100m

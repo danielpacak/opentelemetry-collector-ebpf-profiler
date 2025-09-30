@@ -8,8 +8,8 @@ profiles on all processes running on the system. It contains the [eBPF profiler 
 a subset of components from OpenTelemetry Collector Core and OpenTelemetry Collector Contrib.
 
 > The purpose of this repository is not to replace the official OpenTelemetry Collector eBPF
-> Profiling Distribution, but to play with an early, custom distribution until the upstream is
-> officially released.
+> Profiling [Distribution](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler),
+> but to play with an early, custom distribution until the upstream is officially released.
 
 ## Quick Start
 
@@ -138,7 +138,13 @@ exporters:
       - php
       - cpython
 
+extensions:
+  pprof:
+    endpoint: ":1777"
+
 service:
+  extensions:
+    - pprof
   pipelines:
     profiles:
       receivers:
@@ -382,11 +388,16 @@ docker compose down
 ## Building and Running Locally
 
 
-1. Install the builder. For linux/amd64 platform you can use the following command:
+1. Install the builder. For linux/amd64 or linux/arm64 platform you can use the following commands:
 
    ```
    curl --proto '=https' --tlsv1.2 -fL -o ocb \
    https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.134.0/ocb_0.134.0_linux_amd64
+   chmod +x ocb
+   ```
+   ```
+   curl --proto '=https' --tlsv1.2 -fL -o ocb \
+   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.134.0/ocb_0.134.0_linux_arm64
    chmod +x ocb
    ```
 
@@ -402,7 +413,7 @@ docker compose down
       docker run --rm --privileged tonistiigi/binfmt --install all
       docker buildx create --name mybuilder --use
       ```
-   2. Build the Docker image as Linux AMD or ARM, and load the build result to "docker images":
+   2. Build the Docker image as linux/amd64 or linux/arm64, and load the build result to "docker images":
       ```
       docker buildx build --load \
         -t docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest \
@@ -442,6 +453,36 @@ limactl start --name=collector-ebpf-profiler \
 ```
 limactl shell collector-ebpf-profiler
 ```
+
+## Using pprof Extension for Profiling the Profiler ;)
+
+```
+kubectl apply -k example/kubernetes/simple
+```
+
+```
+kubectl port-forward -n node-agent collector-ebpf-profiler-hlzg8 1777:1777
+```
+
+To save a CPU profile on your machine, run the following command:
+
+``` console
+$ go tool pprof "http://localhost:1777/debug/pprof/profile?seconds=30"
+Fetching profile over HTTP from http://localhost:1777/debug/pprof/profile?seconds=30
+Saved profile in /home/dpacak/pprof/pprof.otelcol-ebpf-profiler.samples.cpu.001.pb.gz
+File: otelcol-ebpf-profiler
+Build ID: 9e9eeb9b7e72e1bb0af283a760da324cd8e2c91b
+Type: cpu
+Time: 2025-09-30 07:33:14 CEST
+Duration: 30s, Total samples = 180ms (  0.6%)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) 
+```
+
+The CPU profile determines where the program spends the most time while actively consuming resources.
+After running the above command, pprof will enter the interactive mode. From here, the profiles can
+be analyzed. See [Go Profiling with pprof basics](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/extension/pprofextension#go-profiling-with-pprof-basics)
+for more details.
 
 ## Further Reading
 
