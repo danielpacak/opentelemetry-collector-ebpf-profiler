@@ -214,47 +214,6 @@ Instrumentation: go, Function: runtime.goexit
   process.pid: 2751 (Int)
   thread.id: 2832 (Int)
 ---------------------------------------------------
-Instrumentation: kernel, Function: _raw_spin_unlock_irqrestore
-Instrumentation: kernel, Function: __wake_up_sync_key
-Instrumentation: kernel, Function: sock_def_readable
-Instrumentation: kernel, Function: tcp_data_ready
-Instrumentation: kernel, Function: tcp_data_queue
-Instrumentation: kernel, Function: tcp_rcv_established
-Instrumentation: kernel, Function: tcp_v4_do_rcv
-Instrumentation: kernel, Function: tcp_v4_rcv
-Instrumentation: kernel, Function: ip_protocol_deliver_rcu
-Instrumentation: kernel, Function: ip_local_deliver_finish
-Instrumentation: kernel, Function: ip_local_deliver
-Instrumentation: kernel, Function: ip_rcv
-Instrumentation: kernel, Function: __netif_receive_skb_one_core
-Instrumentation: kernel, Function: __netif_receive_skb
-Instrumentation: kernel, Function: process_backlog
-Instrumentation: kernel, Function: __napi_poll
-Instrumentation: kernel, Function: net_rx_action
-Instrumentation: kernel, Function: handle_softirqs
-Instrumentation: kernel, Function: __do_softirq
-Instrumentation: kernel, Function: do_softirq.part.0
-Instrumentation: kernel, Function: __local_bh_enable_ip
-Instrumentation: kernel, Function: __dev_queue_xmit
-Instrumentation: kernel, Function: neigh_hh_output
-Instrumentation: kernel, Function: ip_finish_output2
-Instrumentation: kernel, Function: __ip_finish_output
-Instrumentation: kernel, Function: ip_finish_output
-Instrumentation: kernel, Function: ip_output
-Instrumentation: kernel, Function: ip_local_out
-Instrumentation: kernel, Function: __ip_queue_xmit
-Instrumentation: kernel, Function: ip_queue_xmit
-Instrumentation: kernel, Function: __tcp_transmit_skb
-Instrumentation: kernel, Function: tcp_write_xmit
-Instrumentation: kernel, Function: __tcp_push_pending_frames
-Instrumentation: kernel, Function: tcp_push
-Instrumentation: kernel, Function: tcp_sendmsg_locked
-Instrumentation: kernel, Function: tcp_sendmsg
-Instrumentation: kernel, Function: inet6_sendmsg
-Instrumentation: kernel, Function: sock_write_iter
-Instrumentation: kernel, Function: vfs_write
-Instrumentation: kernel, Function: ksys_write
-Instrumentation: kernel, Function: __x64_sys_write
 Instrumentation: kernel, Function: x64_sys_call
 Instrumentation: kernel, Function: do_syscall_64
 Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe
@@ -278,28 +237,6 @@ Instrumentation: go, Function: golang.org/x/net/http2.(*flushFrameWriter).writeF
 Instrumentation: go, Function: golang.org/x/net/http2.(*serverConn).writeFrameAsync
 Instrumentation: go, Function: golang.org/x/net/http2.(*serverConn).startFrameWrite.gowrap2
 Instrumentation: go, Function: runtime.goexit
-------------------- End Sample --------------------
-------------------- New Sample --------------------
-  thread.name: kube-apiserver (Str)
-  process.executable.name: kube-apiserver (Str)
-  process.executable.path: /usr/local/bin/kube-apiserver (Str)
-  process.pid: 2751 (Int)
-  thread.id: 2830 (Int)
----------------------------------------------------
-Instrumentation: kernel, Function: ep_poll
-Instrumentation: kernel, Function: do_epoll_wait
-Instrumentation: kernel, Function: do_epoll_pwait.part.0
-Instrumentation: kernel, Function: __x64_sys_epoll_pwait
-Instrumentation: kernel, Function: x64_sys_call
-Instrumentation: kernel, Function: do_syscall_64
-Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe
-Instrumentation: go, Function: internal/runtime/syscall.Syscall6
-Instrumentation: go, Function: internal/runtime/syscall.EpollWait
-Instrumentation: go, Function: runtime.netpoll
-Instrumentation: go, Function: runtime.findRunnable
-Instrumentation: go, Function: runtime.schedule
-Instrumentation: go, Function: runtime.park_m
-Instrumentation: go, Function: runtime.mcall
 ------------------- End Sample --------------------
 ------------------- End Profile -------------------
 -------------- End Resource Profile ---------------
@@ -444,14 +381,15 @@ brew install lima
 ```
 
 ```
-limactl start --name=collector-ebpf-profiler \
-  --vm-type=vz --mount-type=virtiofs \
+limactl start --name=opentelemetry-collector-ebpf-profiler \
+  --vm-type=vz \
+  --mount-type=virtiofs \
   --tty=false \
   .lima/template.yaml
 ```
 
 ```
-limactl shell collector-ebpf-profiler
+limactl shell opentelemetry-collector-ebpf-profiler
 ```
 
 ## Using pprof Extension for Profiling the Profiler ;)

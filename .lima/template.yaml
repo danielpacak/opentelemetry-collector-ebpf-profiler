@@ -1,4 +1,4 @@
-minimumLimaVersion: "1.0.0"
+minimumLimaVersion: "1.2.0"
 images:
   # Try to use release-yyyyMMdd image if available. Note that release-yyyyMMdd will be removed after several months.
   - location: "https://cloud-images.ubuntu.com/releases/22.04/release-20250108/ubuntu-22.04-server-cloudimg-amd64.img"
@@ -19,11 +19,11 @@ disk: 50Gib
 mounts:
   - location: "~"
     writable: true
-  - location: "/tmp/lima"
-    writable: true
-upgradePackages: true
+containerd:
+  system: false
+  user: false
 provision:
-  # `system` is executed with the root privilege
+  # See <# https://docs.docker.com/engine/install/ubuntu/>
   - mode: system
     script: |
       #!/bin/bash
@@ -55,23 +55,118 @@ provision:
         containerd.io \
         docker-buildx-plugin \
         docker-compose-plugin
+  # See <https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/>
   - mode: system
     script: |
       #!/bin/bash
       set -eux -o pipefail
 
-      command -v kubectl >/dev/null 2>&1 && exit 0
-
-      # Install Kubectl
-      snap install kubectl --classic
+      command -v kubeadm >/dev/null 2>&1 && exit 0
+      # Install and configure prerequisites
+      cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+      overlay
+      br_netfilter
+      EOF
+      modprobe overlay
+      modprobe br_netfilter
+      cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.ipv4.ip_forward                 = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      EOF
+      sysctl --system
+      # Installing kubeadm, kubelet and kubectl
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y apt-transport-https ca-certificates curl
+      VERSION=$(curl -L -s https://dl.k8s.io/release/stable.txt | sed -e 's/v//' | cut -d'.' -f1-2)
+      echo "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v${VERSION}/deb/ /" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+      curl -fsSL https://pkgs.k8s.io/core:/stable:/v${VERSION}/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      apt-get update
+      # cri-tools
+      apt-get install -y cri-tools
+      cat  <<EOF | sudo tee /etc/crictl.yaml
+      runtime-endpoint: unix:///run/containerd/containerd.sock
+      EOF
+      # cni-plugins
+      apt-get install -y kubernetes-cni
+      rm -f /etc/cni/net.d/*.conf*
+      apt-get install -y kubelet kubeadm kubectl && apt-mark hold kubelet kubeadm kubectl
+      systemctl enable --now kubelet
   - mode: system
     script: |
       #!/bin/bash
       set -eux -o pipefail
-
+      [ -e /etc/containerd/conf.d/k8s.toml ] && exit 0
+      mkdir -p /etc/containerd/conf.d
+      containerd config default > /etc/containerd/config.toml
+      sed -i 's/imports.*/imports = ["\/etc\/containerd\/conf.d\/*.toml"]/g' /etc/containerd/config.toml
+      # Configuring the systemd cgroup driver
+      # Overriding the sandbox (pause) image
+      cat <<EOF >>/etc/containerd/conf.d/k8s.toml
+        [plugins]
+          [plugins."io.containerd.grpc.v1.cri"]
+            sandbox_image = "$(kubeadm config images list | grep pause | sort -r | head -n1)"
+            [plugins."io.containerd.grpc.v1.cri".containerd]
+              [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+                [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+                  runtime_type = "io.containerd.runc.v2"
+                  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+                    SystemdCgroup = true
+      EOF
+      systemctl restart containerd
+  # See <https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/>
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      test -e /etc/kubernetes/admin.conf && exit 0
+      export KUBECONFIG=/etc/kubernetes/admin.conf
+      systemctl stop kubelet
+      kubeadm config images list
+      kubeadm config images pull --cri-socket=unix:///run/containerd/containerd.sock
+      systemctl start kubelet
+      # Initializing your control-plane node
+      cat <<EOF >kubeadm-config.yaml
+      kind: InitConfiguration
+      apiVersion: kubeadm.k8s.io/v1beta4
+      nodeRegistration:
+        criSocket: unix:///run/containerd/containerd.sock
+      ---
+      kind: ClusterConfiguration
+      apiVersion: kubeadm.k8s.io/v1beta4
+      apiServer:
+        certSANs: # --apiserver-cert-extra-sans
+        - "127.0.0.1"
+      networking:
+        podSubnet: "10.244.0.0/16" # --pod-network-cidr
+      ---
+      kind: KubeletConfiguration
+      apiVersion: kubelet.config.k8s.io/v1beta1
+      cgroupDriver: systemd
+      EOF
+      kubeadm init --node-name control-plane --config kubeadm-config.yaml
+      # Installing a Pod network add-on
+      kubectl apply -f https://github.com/flannel-io/flannel/releases/download/v0.26.7/kube-flannel.yml
+      # Control plane node isolation
+      kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+      # Replace the server address with localhost, so that it works also from the host
+      sed -e "/server:/ s|https://.*:\([0-9]*\)$|https://127.0.0.1:\1|" -i $KUBECONFIG
+      mkdir -p ${HOME:-/root}/.kube && cp -f $KUBECONFIG ${HOME:-/root}/.kube/config
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      export KUBECONFIG=/etc/kubernetes/admin.conf
+      mkdir -p {{.Home}}/.kube
+      cp -f $KUBECONFIG {{.Home}}/.kube/config
+      chown -R {{.User}} {{.Home}}/.kube
+  # See <https://helm.sh/docs/intro/install/#from-snap>
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
       command -v helm >/dev/null 2>&1 && exit 0
-
-      # Install Helm
       snap install helm --classic
   - mode: system
     script: |
@@ -80,7 +175,7 @@ provision:
 
       command -v k9s >/dev/null 2>&1 && exit 0
       export DEBIAN_FRONTEND=noninteractive
-      export K9S_VERSION="v0.50.5"
+      export K9S_VERSION="v0.50.13"
 
       # Install K9s
       wget https://github.com/derailed/k9s/releases/download/$K9S_VERSION/k9s_linux_$(dpkg --print-architecture).deb -O k9s.deb
@@ -121,7 +216,7 @@ provision:
       command -v go >/dev/null 2>&1 && exit 0
 
       # Install Golang
-      export GO_VERSION="1.24.3"
+      export GO_VERSION="1.24.6"
 
       wget https://go.dev/dl/go$GO_VERSION.linux-$(dpkg --print-architecture).tar.gz -O go.tar.gz
       tar -C /usr/local -xzvf go.tar.gz
