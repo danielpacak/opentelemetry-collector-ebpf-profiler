@@ -59,7 +59,7 @@ data:
           - jvm
           - cpython
           - php
-        export_function_file: false
+        export_function_file: true
 
     extensions:
       pprof:

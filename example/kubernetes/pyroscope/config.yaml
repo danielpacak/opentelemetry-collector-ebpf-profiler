@@ -45,7 +45,7 @@ data:
 
     exporters:
       otlp/pyroscope:
-        endpoint: http://pyroscope.pyroscope:4040
+        endpoint: http://pyroscope:4040
         tls:
           insecure: true
 
