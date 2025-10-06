@@ -11,6 +11,35 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
 > Profiling [Distribution](https://github.com/open-telemetry/opentelemetry-collector-releases/tree/main/distributions/otelcol-ebpf-profiler),
 > but to play with an early, custom distribution until the upstream is officially released.
 
+## Deployment
+
+``` mermaid
+flowchart LR
+  subgraph nodeA["Node: A"]
+    collector-ebpf-profiler-a["Pod: OTel Collector eBPF Profiling Distro"]
+  end
+  subgraph nodeB["Node: B"]
+    collector-ebpf-profiler-b["Pod: OTel Collector eBPF Profiling Distro"]
+  end
+  subgraph nodeC["Node: C"]
+    collector-ebpf-profiler-c["Pod: OTel Collector eBPF Profiling Distro"]
+  end
+  pyroscope["Pyroscope"]
+  clickhouse@{ shape: cyl, label: "ClickHouse" }
+  otel-collector["OTel Collector Contrib Distro"]
+  collector-ebpf-profiler-a e2@--> otel-collector
+  collector-ebpf-profiler-b e3@--> otel-collector
+  collector-ebpf-profiler-c e4@--> otel-collector
+  otel-collector e5@--> pyroscope
+  otel-collector e1@--> clickhouse
+
+  e1@{ animate: true }
+  e2@{ animate: true }
+  e3@{ animate: true }
+  e4@{ animate: true }
+  e5@{ animate: true }
+```
+
 ## Quick Start
 
 1. Create a collector configuration file. A very basic configuration may look as follows:
@@ -219,54 +248,6 @@ kubectl port-forward -n pyroscope svc/pyroscope 4040
 ```
 
 ![](./docs/pyroscope.png)
-
-``` mermaid
-flowchart LR
-  subgraph nodeA["Node: A"]
-    collector-ebpf-profiler-a["Pod: OTel Collector eBPF Profiling Distro"]
-  end
-  subgraph nodeB["Node: B"]
-    collector-ebpf-profiler-b["Pod: OTel Collector eBPF Profiling Distro"]
-  end
-  subgraph nodeC["Node: C"]
-    collector-ebpf-profiler-c["Pod: OTel Collector eBPF Profiling Distro"]
-  end
-  pyroscope["Pyroscope"]
-  clickhouse@{ shape: cyl, label: "ClickHouse" }
-  otel-collector["OTel Collector Contrib Distro"]
-  collector-ebpf-profiler-a e2@--> otel-collector
-  collector-ebpf-profiler-b e3@--> otel-collector
-  collector-ebpf-profiler-c e4@--> otel-collector
-  otel-collector e5@--> pyroscope
-  otel-collector e1@--> clickhouse
-
-  e1@{ animate: true }
-  e2@{ animate: true }
-  e3@{ animate: true }
-  e4@{ animate: true }
-  e5@{ animate: true }
-```
-
-``` mermaid
-flowchart TD
-  subgraph node-a["Node: A"]
-    subgraph pod["Pod: collector-ebpf-profiler"]
-      subgraph container["Container: profiler"]
-        procfs@{ shape: cyl, label: "/proc" }
-        cgroupfs@{ shape: cyl, label: "/sys/fs/cgroup" }
-        debugfs@{ shape: cyl, label: "/sys/kernel/debug" }
-      end
-    end
-    volumeMount1["/proc"]
-    volumeMount2["/sys/fs/cgroup"]
-    volumeMount3["/sys/kernel/debug"]
-
-    procfs --> volumeMount1
-    cgroupfs --> volumeMount2
-    debugfs --> volumeMount3
-
-  end
-```
 
 ## Example Docker Compose Deployment
 
