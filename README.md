@@ -21,10 +21,6 @@ a subset of components from OpenTelemetry Collector Core and OpenTelemetry Colle
      profiling:
        Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
        SamplesPerSecond: 20
-       BpfVerifierLogLevel: 1
-       VerboseMode: true
-       SendErrorFrames: false
-       OffCPUThreshold: 0
      customprofilesreceiver:
        report_interval: 5s
 
@@ -88,10 +84,6 @@ receivers:
   profiling:
     Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
     SamplesPerSecond: 20
-    BpfVerifierLogLevel: 1
-    VerboseMode: true
-    SendErrorFrames: false
-    OffCPUThreshold: 0
 
 processors:
   k8sattributes:
@@ -188,32 +180,6 @@ $ kubectl logs -n node-agent daemonsets/collector-ebpf-profiler
   process.pid: 2751 (Int)
   thread.id: 2832 (Int)
 ---------------------------------------------------
-Instrumentation: go, Function: crypto/internal/bigmod.(*Nat).maybeSubtractModulus
-Instrumentation: go, Function: crypto/internal/bigmod.(*Nat).montgomeryMul
-Instrumentation: go, Function: crypto/internal/bigmod.(*Nat).ExpShortVarTime
-Instrumentation: go, Function: crypto/rsa.encrypt
-Instrumentation: go, Function: crypto/rsa.VerifyPKCS1v15
-Instrumentation: go, Function: gopkg.in/square/go-jose%2ev2.rsaEncrypterVerifier.verifyPayload
-Instrumentation: go, Function: gopkg.in/square/go-jose%2ev2.(*rsaEncrypterVerifier).verifyPayload
-Instrumentation: go, Function: gopkg.in/square/go-jose%2ev2.JSONWebSignature.DetachedVerify
-Instrumentation: go, Function: gopkg.in/square/go-jose%2ev2.JSONWebSignature.Verify-fm
-Instrumentation: go, Function: gopkg.in/square/go-jose.v2/jwt.(*JSONWebToken).Claims
-Instrumentation: go, Function: k8s.io/kubernetes/pkg/serviceaccount.(*jwtTokenAuthenticator[go.shape.struct { Kubernetes k8s.io/kubernetes/pkg/serviceaccount.kubernetes "json:\"kubernetes.io,omitempty\"" }]).AuthenticateToken
-Instrumentation: go, Function: k8s.io/kubernetes/pkg/serviceaccount.(*jwtTokenAuthenticator[k8s.io/kubernetes/pkg/serviceaccount.privateClaims]).AuthenticateToken
-Instrumentation: go, Function: k8s.io/apiserver/pkg/authentication/token/union.(*unionAuthTokenHandler).AuthenticateToken
-Instrumentation: go, Function: k8s.io/apiserver/pkg/authentication/token/cache.(*cachedTokenAuthenticator).doAuthenticateToken.func1
-Instrumentation: go, Function: golang.org/x/sync/singleflight.(*Group).doCall.func2
-Instrumentation: go, Function: golang.org/x/sync/singleflight.(*Group).doCall
-Instrumentation: go, Function: golang.org/x/sync/singleflight.(*Group).DoChan.gowrap1
-Instrumentation: go, Function: runtime.goexit
-------------------- End Sample --------------------
-------------------- New Sample --------------------
-  thread.name: kube-apiserver (Str)
-  process.executable.name: kube-apiserver (Str)
-  process.executable.path: /usr/local/bin/kube-apiserver (Str)
-  process.pid: 2751 (Int)
-  thread.id: 2832 (Int)
----------------------------------------------------
 Instrumentation: kernel, Function: x64_sys_call
 Instrumentation: kernel, Function: do_syscall_64
 Instrumentation: kernel, Function: entry_SYSCALL_64_after_hwframe
@@ -264,7 +230,6 @@ flowchart LR
   end
   subgraph nodeC["Node: C"]
     collector-ebpf-profiler-c["Pod: OTel Collector eBPF Profiling Distro"]
-    collector-kubernetes["Pod: OTel Collector Kubernetes Distro"]
   end
   pyroscope["Pyroscope"]
   clickhouse@{ shape: cyl, label: "ClickHouse" }
@@ -274,14 +239,12 @@ flowchart LR
   collector-ebpf-profiler-c e4@--> otel-collector
   otel-collector e5@--> pyroscope
   otel-collector e1@--> clickhouse
-  collector-kubernetes e6@--> otel-collector
 
   e1@{ animate: true }
   e2@{ animate: true }
   e3@{ animate: true }
   e4@{ animate: true }
   e5@{ animate: true }
-  e6@{ animate: true }
 ```
 
 ``` mermaid
