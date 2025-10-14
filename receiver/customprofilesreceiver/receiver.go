@@ -25,7 +25,7 @@ type Controller struct {
 	nextConsumer xconsumer.Profiles
 }
 
-func (c *Controller) Start(ctx context.Context, host component.Host) error {
+func (c *Controller) Start(ctx context.Context, _ component.Host) error {
 	c.logger.Info("Starting custom profiles receiver")
 	go func() {
 		tick := time.NewTicker(c.config.ReportInterval)
@@ -58,7 +58,7 @@ func (c *Controller) GenerateProfiles() (pprofile.Profiles, error) {
 	profiles := pprofile.NewProfiles()
 	rp := profiles.ResourceProfiles().AppendEmpty()
 	rp.Resource().Attributes().PutStr(string(semconv.ContainerIDKey),
-		string("abc123..."))
+		"abc123...")
 	rp.SetSchemaUrl(semconv.SchemaURL)
 
 	sp := rp.ScopeProfiles().AppendEmpty()

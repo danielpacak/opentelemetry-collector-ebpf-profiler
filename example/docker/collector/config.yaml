@@ -1,11 +1,9 @@
 receivers:
   profiling:
-    BpfVerifierLogLevel: 1
-    Tracers: php
-    SamplesPerSecond: 19
-    VerboseMode: true
-    SendErrorFrames: false
-    OffCPUThreshold: 0
+    tracers: php
+    samples_per_second: 19
+    verbose_mode: true
+    send_error_frames: false
 
 exporters:
   customprofilesexporter:

@@ -8,8 +8,9 @@ data:
   config.yaml: |
     receivers:
       profiling:
-        Tracers: all
-        SamplesPerSecond: 20
+        tracers: all
+        samples_per_second: 19
+        load_probe: true
 
     processors:
       customprofilesprocessor:

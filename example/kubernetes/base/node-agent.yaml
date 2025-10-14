@@ -50,7 +50,7 @@ spec:
         - name: profiler
           # image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:latest
           # imagePullPolicy: IfNotPresent
-          image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:v0.134.0
+          image: docker.io/danielpacak/opentelemetry-collector-ebpf-profiler:v0.137.0
           imagePullPolicy: Always
           args:
             - --config=/etc/collector/config.yaml

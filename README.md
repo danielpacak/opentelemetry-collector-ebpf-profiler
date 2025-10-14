@@ -48,8 +48,9 @@ flowchart LR
    # collector-config.yaml
    receivers:
      profiling:
-       Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
-       SamplesPerSecond: 20
+       tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
+       samples_per_second: 19
+       load_probe: true
      customprofilesreceiver:
        report_interval: 5s
 
@@ -111,8 +112,9 @@ through the `container.id` resource attribute.
 # collector-config.yaml
 receivers:
   profiling:
-    Tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
-    SamplesPerSecond: 20
+    tracers: "perl,php,python,hotspot,ruby,v8,dotnet,go"
+    samples_per_second: 19
+    load_probe: true
 
 processors:
   k8sattributes:
@@ -273,12 +275,12 @@ docker compose down
 
    ```
    curl --proto '=https' --tlsv1.2 -fL -o ocb \
-   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.134.0/ocb_0.134.0_linux_amd64
+   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.137.0/ocb_0.137.0_linux_amd64
    chmod +x ocb
    ```
    ```
    curl --proto '=https' --tlsv1.2 -fL -o ocb \
-   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.134.0/ocb_0.134.0_linux_arm64
+   https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.137.0/ocb_0.137.0_linux_arm64
    chmod +x ocb
    ```
 

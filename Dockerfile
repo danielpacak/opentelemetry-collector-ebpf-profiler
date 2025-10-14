@@ -13,7 +13,7 @@ COPY ./processor processor
 COPY ./exporter exporter
 COPY ./receiver receiver
 
-RUN --mount=type=cache,target=/root/.cache/go-build GOARCH=$TARGETARCH go install go.opentelemetry.io/collector/cmd/builder@v0.134.0
+RUN --mount=type=cache,target=/root/.cache/go-build GOARCH=$TARGETARCH go install go.opentelemetry.io/collector/cmd/builder@v0.137.0
 RUN --mount=type=cache,target=/root/.cache/go-build CGO_ENABLED=0 GOARCH=$TARGETARCH builder --config manifest.yaml
 
 FROM --platform=$BUILDPLATFORM gcr.io/distroless/base:latest

@@ -27,6 +27,7 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 	attributeTable := pd.Dictionary().AttributeTable()
 	functionTable := pd.Dictionary().FunctionTable()
 	stringTable := pd.Dictionary().StringTable()
+	stackTable := pd.Dictionary().StackTable()
 
 	rps := pd.ResourceProfiles()
 	for i := 0; i < rps.Len(); i++ {
@@ -61,16 +62,15 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 				fmt.Println("------------------- New Profile -------------------")
 				fmt.Printf("  ProfileID: %x\n", [16]byte(profile.ProfileID()))
 				fmt.Printf("  Dropped attributes count: %d\n", profile.DroppedAttributesCount())
-				sampleType := "samples"
-				for n := 0; n < profile.SampleType().Len(); n++ {
-					sampleType = stringTable.At(int(profile.SampleType().At(n).TypeStrindex()))
-					fmt.Printf("  SampleType: %s\n", sampleType)
-				}
+				fmt.Printf("  SampleType: %s\n", stringTable.At(int(profile.SampleType().TypeStrindex())))
+
 				profileAttrs := profile.AttributeIndices()
 				if profileAttrs.Len() > 0 {
 					for n := 0; n < profileAttrs.Len(); n++ {
 						attr := attributeTable.At(int(profileAttrs.At(n)))
-						fmt.Printf("  %s: %s (%s)\n", attr.Key(), attr.Value().AsString(), attr.Value().Type().String())
+						fmt.Printf("  %s: %s (%s)\n", stringTable.At(int(attr.KeyStrindex())),
+							attr.Value().AsString(),
+							attr.Value().Type().String())
 					}
 					fmt.Println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 				}
@@ -85,22 +85,25 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 						sampleAttrs := sample.AttributeIndices()
 						for n := 0; n < sampleAttrs.Len(); n++ {
 							attr := attributeTable.At(int(sampleAttrs.At(n)))
-							fmt.Printf("  %s: %s (%s)\n", attr.Key(), attr.Value().AsString(), attr.Value().Type().String())
+							fmt.Printf("  %s: %s (%s)\n", stringTable.At(int(attr.KeyStrindex())),
+								attr.Value().AsString(),
+								attr.Value().Type().String())
 						}
 						fmt.Println("---------------------------------------------------")
 					}
 
-					profileLocationsIndices := profile.LocationIndices()
+					stack := stackTable.At(int(sample.StackIndex()))
+					profileLocationsIndices := stack.LocationIndices()
 
 					if e.config.ExportStackFrames {
-						for m := sample.LocationsStartIndex(); m < sample.LocationsStartIndex()+sample.LocationsLength(); m++ {
-							location := locationTable.At(int(profileLocationsIndices.At(int(m))))
+						for m := 0; m < profileLocationsIndices.Len(); m++ {
+							location := locationTable.At(int(profileLocationsIndices.At(m)))
 							locationAttrs := location.AttributeIndices()
 
 							unwindType := "unknown"
 							for la := 0; la < locationAttrs.Len(); la++ {
 								attr := attributeTable.At(int(locationAttrs.At(la)))
-								if attr.Key() == "profile.frame.type" {
+								if stringTable.At(int(attr.KeyStrindex())) == "profile.frame.type" {
 									unwindType = attr.Value().AsString()
 									break
 								}
@@ -114,7 +117,7 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 							locationLine := location.Line()
 							if locationLine.Len() == 0 {
 								filename := "<unknown>"
-								if location.HasMappingIndex() {
+								if location.MappingIndex() > 0 {
 									mapping := mappingTable.At(int(location.MappingIndex()))
 									filename = stringTable.At(int(mapping.FilenameStrindex()))
 								}

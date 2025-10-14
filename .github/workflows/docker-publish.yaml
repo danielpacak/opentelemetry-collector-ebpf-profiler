@@ -6,7 +6,7 @@ on:
       imageTag:
         description: "Docker image tag"
         required: true
-        default: "v0.134.0"
+        default: "v0.137.0"
 
 jobs:
   publish:

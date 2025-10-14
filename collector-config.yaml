@@ -1,11 +1,12 @@
 receivers:
   profiling:
-    Tracers: "all"
-    SamplesPerSecond: 20
-    BpfVerifierLogLevel: 1
-    VerboseMode: true
-    SendErrorFrames: false
-    OffCPUThreshold: 0
+    tracers: "all"
+    samples_per_second: 19
+    bpf_verifier_log_level: 1
+    verbose_mode: true
+    send_error_frames: false
+    off_cpu_threshold: 0
+    load_probe: true
   customprofilesreceiver:
     foo: "bar"
     report_interval: 5s
