@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: collector
+  namespace: node-agent
+data:
+  config.yaml: |
+    receivers:
+      profiling:
+        tracers: all
+        samples_per_second: 19
+        load_probe: true
+
+    processors:
+      k8sattributes:
+        wait_for_metadata: true
+        wait_for_metadata_timeout: 10s
+        auth_type: "serviceAccount"
+        passthrough: false
+        filter:
+          node_from_env_var: KUBERNETES_NODE_NAME
+        extract:
+          metadata:
+            - k8s.cluster.uid
+            - k8s.node.name
+            - k8s.pod.uid
+            - k8s.pod.name
+            - k8s.container.name
+            - k8s.deployment.name
+            - k8s.namespace.name
+            - service.namespace
+            - service.name
+            - service.version
+            - service.instance.id
+            - container.image.name
+            - container.image.tag
+            - container.image.repo_digests
+          otel_annotations: true
+        pod_association:
+          - sources:
+              - from: resource_attribute
+                name: container.id
+
+    exporters:
+      httprest:
+        address: ":7799"
+
+    service:
+      pipelines:
+        profiles:
+          receivers:
+            - profiling
+          processors:
+            - k8sattributes
+          exporters:
+            - httprest
