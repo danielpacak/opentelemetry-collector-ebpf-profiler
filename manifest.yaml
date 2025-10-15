@@ -15,9 +15,9 @@ exporters:
   - gomod: go.opentelemetry.io/collector/exporter/otlpexporter v0.137.0
   - gomod: go.opentelemetry.io/collector/exporter/otlphttpexporter v0.137.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/fileexporter v0.137.0
-  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/customprofilesexporter v0.0.0
+  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/customprofilesexporter v0.137.0
     import: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/customprofilesexporter
-  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/httprestexporter v0.0.0
+  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/httprestexporter v0.137.0
     import: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/httprestexporter
 
 processors:
@@ -26,14 +26,16 @@ processors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sattributesprocessor v0.137.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourcedetectionprocessor v0.137.0
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/processor/resourceprocessor v0.137.0
-  - import: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/processor/customprofilesprocessor
-    gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/processor/customprofilesprocessor v0.0.0
+  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/processor/customprofilesprocessor v0.137.0
+    import: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/processor/customprofilesprocessor
 
 receivers:
   - gomod: go.opentelemetry.io/ebpf-profiler v0.0.202541-0.20251013075356-cd4b3811a68f
     import: go.opentelemetry.io/ebpf-profiler/collector
-  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/customprofilesreceiver v0.0.0
+  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/customprofilesreceiver v0.137.0
     import: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/customprofilesreceiver
+  - gomod: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/profilingextensionreceiver v0.137.0
+    import: github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/profilingextensionreceiver
 
 providers:
   - gomod: go.opentelemetry.io/collector/confmap/provider/envprovider v1.43.0
@@ -47,6 +49,7 @@ replaces:
   # see https://github.com/openshift/api/pull/1515
   - github.com/openshift/api => github.com/openshift/api v0.0.0-20230726162818-81f778f3b3ec
   - github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/customprofilesreceiver => ../receiver/customprofilesreceiver
+  - github.com/danielpacak/opentelemetry-collector-ebpf-profiler/receiver/profilingextensionreceiver => ../receiver/profilingextensionreceiver
   - github.com/danielpacak/opentelemetry-collector-ebpf-profiler/processor/customprofilesprocessor => ../processor/customprofilesprocessor
   - github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/customprofilesexporter => ../exporter/customprofilesexporter
   - github.com/danielpacak/opentelemetry-collector-ebpf-profiler/exporter/httprestexporter => ../exporter/httprestexporter
