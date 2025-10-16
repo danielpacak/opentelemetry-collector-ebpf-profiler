@@ -15,7 +15,6 @@ var (
 	errInvalidConfig = errors.New("invalid config")
 )
 
-// NewFactory creates a factory for the receiver.
 func NewFactory() receiver.Factory {
 	return xreceiver.NewFactory(
 		typeStr,
@@ -25,7 +24,9 @@ func NewFactory() receiver.Factory {
 
 func defaultConfig() component.Config {
 	return &Config{
-		Foo: "bar",
+		AttachKernelSymbols: []string{
+			"copy_process",
+		},
 	}
 }
 

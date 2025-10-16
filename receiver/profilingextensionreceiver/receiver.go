@@ -19,8 +19,8 @@ type extensionReceiver struct {
 	config       *Config
 	nextConsumer xconsumer.Profiles
 
-	objs extensionObjects
-	link link.Link
+	objs  extensionObjects
+	links []link.Link
 }
 
 func newExtensionReceiver(logger *zap.Logger, config *Config, nextConsumer xconsumer.Profiles) *extensionReceiver {
@@ -32,7 +32,7 @@ func newExtensionReceiver(logger *zap.Logger, config *Config, nextConsumer xcons
 }
 
 // do not produce any new profiles, just load and attach eBPF objects and tail call uprobe__generic program
-func (e *extensionReceiver) Start(ctx context.Context, host component.Host) error {
+func (e *extensionReceiver) Start(_ context.Context, _ component.Host) error {
 	e.logger.Info("Starting profilingextension receiver")
 
 	// Remove resource limits for kernels <5.11.
@@ -49,33 +49,49 @@ func (e *extensionReceiver) Start(ctx context.Context, host component.Host) erro
 
 	uprobeGenericProg, err := e.findUprobeGenericProg()
 	if err != nil {
-		return fmt.Errorf("faild to lod prog: %w", err)
+		return err
 	}
+	uprobeGenericProgInfo, err := uprobeGenericProg.Info()
+	if err != nil {
+		return err
+	}
+	uprobeGenericProgID := uint32(0)
+	if id, ok := uprobeGenericProgInfo.ID(); ok {
+		uprobeGenericProgID = uint32(id)
+	}
+
+	e.logger.Info("Updating eBPF prog array map", zap.Uint32("prog.id", uprobeGenericProgID))
 	err = e.objs.ProfilerProgs.Update(uint32(0), uprobeGenericProg, ebpf.UpdateAny)
 	if err != nil {
 		return err
 	}
 
-	// Attach collect_st to the wake_up_new_task symbol
-	e.link, err = link.Kprobe("copy_process", e.objs.CollectSt, nil)
-	//e.link, err = link.Kprobe("wake_up_new_task", e.objs.CollectSt, nil)
-	if err != nil {
-		return fmt.Errorf("attaching XDP: %w", err)
+	// Attach collect_st to configured symbols
+	for _, symbol := range e.config.AttachKernelSymbols {
+		e.logger.Info("Attaching eBPF program to perf event",
+			zap.String("program", "collect_st"),
+			zap.String("symbol", symbol))
+		link, err := link.Kprobe(symbol, e.objs.CollectSt, nil)
+		if err != nil {
+			return fmt.Errorf("attaching collect_st to perf event: %s: %w", symbol, err)
+		}
+		e.links = append(e.links, link)
 	}
 
 	return nil
 }
 
-func (e *extensionReceiver) Shutdown(ctx context.Context) error {
+func (e *extensionReceiver) Shutdown(_ context.Context) error {
 	e.logger.Info("Shutting down profilingextension receiver")
-	e.link.Close()
-	e.objs.Close()
+	for _, link := range e.links {
+		_ = link.Close()
+	}
+	_ = e.objs.Close()
 	return nil
 }
 
 var ErrProgramNotFound = errors.New("program not found")
 
-// find program by type and name
 func (e *extensionReceiver) findUprobeGenericProg() (*ebpf.Program, error) {
 	var err error
 	var id ebpf.ProgramID = 0

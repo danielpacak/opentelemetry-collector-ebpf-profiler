@@ -12,7 +12,9 @@ data:
         samples_per_second: 19
         load_probe: true
       profilingextension:
-        foo: bar
+        attach_kernel_symbols:
+          - copy_process
+          - wake_up_new_task
 
     processors:
       k8sattributes:
