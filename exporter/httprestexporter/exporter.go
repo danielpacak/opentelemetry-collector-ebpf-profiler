@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
@@ -93,6 +94,11 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 			pcs := sps.At(j).Profiles()
 			for k := 0; k < pcs.Len(); k++ {
 				profile := pcs.At(k)
+
+				sampleType := stringTable.At(int(profile.SampleType().TypeStrindex()))
+				if !slices.Contains(e.config.ExportSampleTypes, sampleType) {
+					continue
+				}
 
 				samples := profile.Sample()
 

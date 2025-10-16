@@ -28,6 +28,9 @@ exporters:
       - jvm
       - php
       - cpython
+    export_sample_types:
+      - samples
+      - events
 
 service:
   pipelines:

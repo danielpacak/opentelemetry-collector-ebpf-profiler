@@ -59,10 +59,15 @@ func (e *customexporter) ConsumeProfiles(_ context.Context, pd pprofile.Profiles
 			for k := 0; k < pcs.Len(); k++ {
 				profile := pcs.At(k)
 
+				sampleType := stringTable.At(int(profile.SampleType().TypeStrindex()))
+				if !slices.Contains(e.config.ExportSampleTypes, sampleType) {
+					continue
+				}
+
 				fmt.Println("------------------- New Profile -------------------")
 				fmt.Printf("  ProfileID: %x\n", [16]byte(profile.ProfileID()))
 				fmt.Printf("  Dropped attributes count: %d\n", profile.DroppedAttributesCount())
-				fmt.Printf("  SampleType: %s\n", stringTable.At(int(profile.SampleType().TypeStrindex())))
+				fmt.Printf("  SampleType: %s\n", sampleType)
 
 				profileAttrs := profile.AttributeIndices()
 				if profileAttrs.Len() > 0 {

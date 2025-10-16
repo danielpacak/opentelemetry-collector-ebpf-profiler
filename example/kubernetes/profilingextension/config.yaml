@@ -49,6 +49,9 @@ data:
     exporters:
       httprest:
         address: ":7799"
+        export_sample_types:
+          - samples
+          - events
 
     service:
       pipelines:

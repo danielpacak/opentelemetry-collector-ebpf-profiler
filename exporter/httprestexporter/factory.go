@@ -19,24 +19,30 @@ func NewFactory() exporter.Factory {
 	return xexporter.NewFactory(
 		strType,
 		createDefaultConfig,
-		xexporter.WithProfiles(createProfiles, component.StabilityLevelDevelopment),
+		xexporter.WithProfiles(createProfilesFunc, component.StabilityLevelDevelopment),
 	)
 }
 
 func createDefaultConfig() component.Config {
-	return &Config{}
+	return &Config{
+		Address: ":7799",
+		ExportSampleTypes: []string{
+			"samples",
+			"events",
+		},
+	}
 }
 
-func createProfiles(ctx context.Context, set exporter.Settings, config component.Config) (xexporter.Profiles, error) {
-	customExporter, err := newHTTPRestExporter(set, config)
+func createProfilesFunc(ctx context.Context, set exporter.Settings, config component.Config) (xexporter.Profiles, error) {
+	restExporter, err := newHTTPRestExporter(set, config)
 	if err != nil {
 		return nil, err
 	}
 
 	return xexporterhelper.NewProfiles(ctx, set, config,
-		customExporter.ConsumeProfiles,
-		exporterhelper.WithStart(customExporter.Start),
-		exporterhelper.WithShutdown(customExporter.Close),
+		restExporter.ConsumeProfiles,
+		exporterhelper.WithStart(restExporter.Start),
+		exporterhelper.WithShutdown(restExporter.Close),
 		exporterhelper.WithCapabilities(consumer.Capabilities{MutatesData: false}),
 	)
 }
